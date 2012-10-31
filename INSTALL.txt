@@ -29,19 +29,14 @@ on YouTube:  http://www.youtube.com/watch?v=Jb-QPw4dS4E
 
 NOTES:
 
-1) There is currently a bug in which the seat map setting is ignored if
-you set it as part of the event creation process.  To work around, first
-create the event, then edit event info & settings, set the seat map and
-save.
-
-2) Your Civi events must use a price set where at least one price line 
+1) Your Civi events must use a price set where at least one price line 
 has a participant count.
 
-3) FusionTicket supports multi-price seat maps, where different sections
+2) FusionTicket supports multi-price seat maps, where different sections
 have different prices.  FT refers to these price zones as "Categories."  
 Currently CiviBoxOffice only supports one FT Category per Civi event. 
 Recommend using FT seat maps with only one category for now.
 
-4) The FusionTicket source included in this extension has already 
+3) The FusionTicket source included in this extension has already 
 been patched.  The file ft.patch is included to show diffs from the stock
 FT 7.0b distribution.
