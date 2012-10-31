@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<extension key="org.bactheatre.civiboxoffice" type="module">
+  <file>civiboxoffice</file>
+  <name>CiviBoxOffice</name>
+  <description>Seat maps and assigned seating for CiviCRM events, via integration with FustionTicket.</description>
+  <license>AGPL</license>
+  <maintainer>
+    <author>Jim Meehan</author>
+    <email>jmeehan@bactheatre.org</email>
+  </maintainer>
+  <releaseDate>2012-10-26</releaseDate>
+  <version>1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>4.2</ver>
+  </compatibility>
+  <comments>Support/distribution TBD.</comments>
+  <civix>
+    <namespace>CRM/Civiboxoffice</namespace>
+  </civix>
+</extension>

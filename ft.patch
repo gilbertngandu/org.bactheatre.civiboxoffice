@@ -1,0 +1,709 @@
+diff -rupN fusionticket.orig/css/formatting-civicrm.css fusionticket/css/formatting-civicrm.css
+--- fusionticket.orig/css/formatting-civicrm.css	1969-12-31 16:00:00.000000000 -0800
++++ fusionticket/css/formatting-civicrm.css	2012-10-01 12:09:33.000000000 -0700
+@@ -0,0 +1,110 @@
++/* All of POS */
++.ui-jqgrid-views{border-bottom: 3px solid #FE7B09;padding:2px 2px;}
++.help{font-family:Verdana; color:blue; font-size: 11px;}
++
++/* Save Messages */
++
++.success {
++	color: green;
++	font-size: 14px;
++}
++
++/* Category Page / Seating Chart */
++
++.pm_table {
++    border-spacing: 0px !important;
++    border-collapse: collapse !important;
++}
++
++.pm_seatmap img {
++    border: 1px dashed transparent;
++    display: inline-block;
++}
++
++.pm_check {
++    cursor: pointer;
++    margin: 0;
++    padding: 0 !important;
++}
++
++.pm_seatmap {
++    width: 14px !important;
++    font-size: 12px !important;
++    border-spacing: 0px !important;
++    border: none;
++    padding: 0px !important;
++}
++
++.pm_box {
++	text-align: center;
++	margin: 0 auto;
++}
++.pm_free {
++	background-color:#0d0;
++	width:18px; height:18px;
++	border-right:#00ff00 1px solid;	border-bottom:#00ff00 1px solid;
++	padding:0px;
++}
++.pm_free:hover{
++	background-color:#099;
++}
++.pm_resp {
++	background-color:#FFA500;
++	width:18px; height:18px;
++	border-right:#00ff00 1px solid;	border-bottom:#00ff00 1px solid;
++	padding:0px;
++}
++.pm_occupied {
++	background-color:#d00;
++	width:18px; height:18px;
++	border-top:#000000 1px solid; border-left:#000000 1px solid;
++	padding:0px;
++}
++.pm_none {
++	background-color:#fff; padding:0px;
++	width: 18px; height: 18px;
++}
++
++input.pm_check{
++	width:19px; height:19px;
++	margin:0px;border:0px
++}
++
++td.pm_nosale{background-color:#d2d2d2;width:19px; height:19px;}
++td.label_T{color:#666666;font-size:12px;text-align:center;}
++td.label_E{color:#666666;font-size:12px;text-align:center;background-image:url('images/theme/default/exit.gif');height:19px;width:19px;}
++td.label_RE{color:#666666;font-size:12px;text-align:center;border:#cccccc 1px solid;background-color:#eeffff;height:19px;width:19px;}
++td.label_RW{color:#666666;font-size:12px;text-align:center;border:#cccccc 1px solid;background-color:#eeffff;height:19px;width:19px;}
++td.label_SS{color:#666666;font-size:12px;text-align:center;border:#cccccc 1px solid;background-color:#eeffff;height:19px;width:19px;}
++td.label_SN{color:#666666;font-size:12px;text-align:center;border:#cccccc 1px solid;background-color:#eeffff;height:19px;width:19px;}
++
++
++/* Individual Event page */
++.event_description{font-family:Georgia; color:#000000;font-size:10px;text-align:justify;}
++.event_description_big{font-family:Georgia; color:#000000;font-size:12px;text-align:justify;}
++.event_data{font-family:Verdana; color:#000000;font-weight:bold;font-size:11px; }
++.shop_link{font-family:Verdana; color:#FF8000;font-weight:bold;TEXT-DECORATION:none;font-size:11px;}
++.shop_link:hover{font-family:Verdana; color:#FF8000;font-weight:bold;TEXT-DECORATION:underline;font-size:11px; }
++.menu{border-top:#45436d 1px solid; padding-top:5px;}
++.menu_td{padding-left:10px;padding-bottom:10px; font-family:Verdana; font-weight:bold;}
++.menu_langs{border-top:#45436d 1px solid;border-bottom:#45436d 1px solid; padding-top:5px;padding-bottom:5px;}
++.langs_link{color:#996633;font-family:Verdana;font-weight:bold;TEXT-DECORATION:none;font-size:11px;}
++.langs_link:hover{color:#996633;font-family:Verdana;font-weight:bold;TEXT-DECORATION:underline;font-size:11px;}
++.event_info_item{font-family:Verdana; color:#000000;font-weight:bold;font-size:11px; }
++.event_info_value{font-family:Verdana; color:#000000;font-size:11px; }
++.note{font-family:Verdana; color:#000000;font-size:10px;}
++.cat_info_item{font-family:Verdana; color:#000000;font-weight:bold;font-size:12px; }
++.cat_info_value{font-family:Verdana; color:#000000;font-size:12px; }
++.cart_menu{padding-left:32px;font-family:Verdana; color:#000000;font-size:11px;font-style: italic;}
++.cart_menu_title{font-family:Verdana; color:#996633;font-size:12px;font-weight:bold;}
++.choice_info{font-family:Georgia; color:#000000;font-size:12px;}
++.view_cart_title{font-family:Verdana; color:#996633; font-weight:bold;font-size:12px;}
++/*.view_cart_td{font-family:Verdana; color:#000000;font-size:12px;}*/
++.view_cart_td{font-family: Arial, Helvetica, sans-serif;
++color: #000000;
++font-size: 11px;
++word-spacing: 2px;
++line-height: 12px;}
++.view_cart_total{font-family:Verdana; color:#000000;font-size:14px;font-weight:bold;}
++.order_ptotal{font-family:Verdana; color:#000000;font-size:12px;}
++
+diff -rupN fusionticket.orig/includes/classes/basics.php fusionticket/includes/classes/basics.php
+--- fusionticket.orig/includes/classes/basics.php	2012-07-09 19:18:28.000000000 -0700
++++ fusionticket/includes/classes/basics.php	2012-10-08 17:14:32.963820000 -0700
+@@ -66,17 +66,18 @@ function diff_date($date1, $date2){
+  * @param mixed $var     Variable to debug
+  * @param boolean $escape  If set to true variables content will be html-escaped
+  */
+-function debug($var = false, $escape = false)
+-{
+-   if (DEBUG > 0) {
+-      print '<pre class="debug">';
+-      $var = print_r($var, true);
+-      if ($escape) {
+-         $var = htmlspecialchars($var);
+-      }
+-      print $var . '</pre>';
+-   }
+-}
++/* function debug($var = false, $escape = false)
++ *{
++ *  if (DEBUG > 0) {
++ *     print '<pre class="debug">';
++ *     $var = print_r($var, true);
++ *     if ($escape) {
++ *        $var = htmlspecialchars($var);
++ *     }
++ *     print $var . '</pre>';
++ *  }
++ * }
++ */
+ 
+ /**
+  * Recursively strips slashes from all values in an array
+@@ -488,9 +489,9 @@ function check_system() {
+ 
+   if ($_SHOP->shopconfig_lastrun_int == 0) {
+       return;
+-  } elseif ( $res['current_db_time'] <= $_SHOP->shopconfig_lastrun) {
+-      return;
+-  }
++  } // elseif ( $res['current_db_time'] <= $_SHOP->shopconfig_lastrun) {
++//      return;
++//  }
+ 
+   //print_r('run');
+   //Checks to see if res time is enabled anything more than 9 will delete
+@@ -1088,4 +1089,4 @@ function getIpAddress() {
+ 	}
+ 	return $ip;
+ }
+-?>
+\ No newline at end of file
++?>
+diff -rupN fusionticket.orig/includes/classes/class.model.php fusionticket/includes/classes/class.model.php
+--- fusionticket.orig/includes/classes/class.model.php	2012-08-10 11:50:20.000000000 -0700
++++ fusionticket/includes/classes/class.model.php	2012-10-28 21:18:01.748803000 -0700
+@@ -379,7 +379,7 @@ class Model {
+ 
+   function fillTime(&$data, $name) { // Lxsparks, edited to allow for midday and midnight times in 12 and 24 hour clocks
+     global $_SHOP;
+-		if ($data[$name.'-h'] === "" && $data[$name.'-m'] === "" ) {
++		if ((isset($data[$name.'-h']) && $data[$name.'-h'] === "") && (isset($data[$name.'-m']) && ($data[$name.'-m'] === "" ))) {
+ 			$h = NULL;
+ 			$m= NULL;
+ 			$data[$name] = NULL;
+diff -rupN fusionticket.orig/includes/classes/model.event.php fusionticket/includes/classes/model.event.php
+--- fusionticket.orig/includes/classes/model.event.php	2012-08-10 11:51:36.000000000 -0700
++++ fusionticket/includes/classes/model.event.php	2012-10-28 21:23:48.786910000 -0700
+@@ -83,7 +83,7 @@ class Event Extends Model {
+    // print_r(debug_backtrace());
+     if (ShopDB::begin('Save event')) {
+ 
+-      if (is($this->event_recur_type, "nothing") != "nothing") {
++      if ((! empty($this->event_recur_type)) && (is($this->event_recur_type, "nothing") != "nothing")) {
+          if (!$this->saveRecursion()) { return false;}
+       } else {
+         if(!$new){
+@@ -198,10 +198,10 @@ class Event Extends Model {
+ 		$this->fillTime($data,'event_open');
+ 		$this->fillTime($data,'event_end');
+     $this->fillDate($data,'event_date');
+-  	if ( $data['event_rep'] == 'unique' ) {
++  	if (isset($data['event_rep']) && ($data['event_rep'] == 'unique' )) {
+   		$data['event_rep'] = 'main,sub';
+   	}
+-    if ( strpos($data['event_rep'],'sub')!== false ){
++    if ( isset($data['event_rep']) && (strpos($data['event_rep'],'sub')!== false) ){
+       $this->_columns   = array('#event_id', '*event_name', 'event_text', 'event_short_text', 'event_url',
+                                 'event_image', 'event_webshop', '*event_ort_id', '#event_pm_id', '*event_date', '*event_time',
+                                 'event_open', 'event_end', '*event_status', '*event_order_limit', 'event_template',
+@@ -211,8 +211,8 @@ class Event Extends Model {
+ 
+     }
+ 
+-		if ( !$data['event_id'] ) { //echo 'new:', $data['event_rep'],strpos($data['event_rep'],'sub'),$data['event_pm_ort_id'] ;
+-			if ( strpos($data['event_rep'],'sub')!== false and $data['event_pm_ort_id'] == 'no_pm' ) {
++		if ( ! isset($data['event_id']) ) { //echo 'new:', $data['event_rep'],strpos($data['event_rep'],'sub'),$data['event_pm_ort_id'] ;
++			if ( (isset($data['event_rep']) && (strpos($data['event_rep'],'sub')!== false)) && (isset($data['event_pm_ort_id']) && ($data['event_pm_ort_id'] == 'no_pm')) ) {
+ 				addError('event_pm_ort_id','mandatory');
+ 			}
+ 			if ( $data['event_pm_ort_id'] != 'no_pm' ) {
+@@ -229,7 +229,7 @@ class Event Extends Model {
+   }
+ 
+   function _fill($arr, $nocheck=true)  {
+-    if ($arr['event_rep']=='sub') {
++    if (isset($arr['event_rep']) && ($arr['event_rep']=='sub')) {
+       $main=Event::load($arr['event_main_id'], FALSE);
+       foreach($this->_columns as $key){
+         self::getFieldtype($key);
+Binary files fusionticket.orig/includes/classes/.model.order.php.swp and fusionticket/includes/classes/.model.order.php.swp differ
+diff -rupN fusionticket.orig/includes/classes/model.placemappart.php fusionticket/includes/classes/model.placemappart.php
+--- fusionticket.orig/includes/classes/model.placemappart.php	2012-05-23 17:56:18.000000000 -0700
++++ fusionticket/includes/classes/model.placemappart.php	2012-10-28 21:30:11.801241000 -0700
+@@ -516,8 +516,14 @@ class PlaceMapPart Extends Model {
+             }
+       	  } else
+       	     return self::_abort('cant_create_seat_zone_missing_cat');
+-          $stats[$category->category_ident]++;
+-          $pmps[$category->category_ident] = $this->pmp_id;
++
++      	  if (isset($stats[$category->category_ident])) {
++	          $stats[$category->category_ident]++;
++      	  }
++      	  else {
++      	      $stats[$category->category_ident] = 1;
++      	  }
++      	  $pmps[$category->category_ident] = $this->pmp_id;
+         }
+       }
+     }
+diff -rupN fusionticket.orig/includes/classes/model.placemap.php fusionticket/includes/classes/model.placemap.php
+--- fusionticket.orig/includes/classes/model.placemap.php	2012-08-10 13:10:32.000000000 -0700
++++ fusionticket/includes/classes/model.placemap.php	2012-10-28 21:27:55.029327000 -0700
+@@ -199,8 +199,10 @@ class PlaceMap Extends Model {
+             addwarning('img_loading_problem_match');
+           } else {
+             $doc_name =  "pm_image_{$this->id}.{$ext[1]}";
+-            if (!copy ($_SHOP->files_dir .$old_img, $_SHOP->files_dir .$doc_name)) {
+-              addWarning($name,'img_loading_problem_copy');
++            if ((! file_exists($_SHOP->files_dir .$old_img)) || (!copy ($_SHOP->files_dir .$old_img, $_SHOP->files_dir .$doc_name))) {
++              if(isset($name)) {
++            	addWarning($name,'img_loading_problem_copy');
++              }
+             } else {
+               @chmod($_SHOP->files_dir . $doc_name, $_SHOP->file_mode);
+               $this->pm_image = $doc_name;
+diff -rupN fusionticket.orig/includes/classes/model.seat.php fusionticket/includes/classes/model.seat.php
+--- fusionticket.orig/includes/classes/model.seat.php	2012-05-23 17:56:18.000000000 -0700
++++ fusionticket/includes/classes/model.seat.php	2012-10-09 09:34:26.711621000 -0700
+@@ -50,7 +50,7 @@ class Seat  Extends Model {
+   protected $_columns   = array('#seat_id', '*seat_event_id', '*seat_category_id', '#seat_user_id', '#seat_order_id',
+                                 '#seat_row_nr', '#seat_zone_id', '#seat_pmp_id', 'seat_nr', 'seat_ts', 'seat_sid',
+                                 'seat_price', 'seat_discount', '#seat_discount_id', 'seat_code', '*seat_status',
+-                                '#seat_old_order_id', 'seat_old_status');
++                                '#seat_old_order_id', 'seat_old_status', 'seat_zone_name');
+ 
+ 
+   function ticket ($event_id,$category_id,$seat_id, $user_id, $sid, $cat_price, $discount=null) {
+@@ -93,17 +93,45 @@ class Seat  Extends Model {
+     return $pmp;
+   }
+ 
++  function loadAllSid ($sid){
++  	global $_SHOP;
++  
++  	$query="SELECT Seat.seat_id, Seat.seat_user_id, Seat.seat_order_id, Seat.seat_ts, 
++  			       Seat.seat_sid, Seat.seat_price, Seat.seat_discount_id, Seat.seat_code, 
++  			       Seat.seat_status, Seat.seat_row_nr, Seat.seat_nr, PlaceMapZone.pmz_name, Seat.seat_pmp_id
++            from Seat
++  			LEFT OUTER JOIN PlaceMapZone
++  			ON Seat.seat_zone_id = PlaceMapZone.pmz_id
++            where Seat.seat_sid="._esc($sid) . "AND Seat.seat_status='res'";
++  	$pmp = Array();
++  	if($res=ShopDB::query($query)){
++  		while($rec=shopDB::fetch_assoc($res)){
++  			$seat = new Seat;
++  			$seat->_columns   = array('#seat_id', '#seat_user_id', '#seat_order_id', 'seat_ts', 'seat_sid',
++  					'seat_price', '#seat_discount_id', 'seat_code', '*seat_status', '#seat_row_nr', 'seat_nr', 'seat_zone_name', 'seat_pmp_id');
++  			$seat->_fill($rec);
++  			$pmp[$seat->seat_id]=$seat;
++  		}
++  	}
++  	return $pmp;
++  }
++  
++  
+   public function loadAllOrder($order_id){
+     global $_SHOP;
+ 
+-    $query="SELECT seat_id, seat_user_id, seat_order_id, seat_ts, seat_sid, seat_price, seat_discount_id, seat_code, seat_status
++    $query="SELECT Seat.seat_id, Seat.seat_user_id, Seat.seat_order_id, Seat.seat_category_id, Seat.seat_event_id,
++    		       Seat.seat_ts, Seat.seat_sid, Seat.seat_price, Seat.seat_discount_id, Seat.seat_code, 
++  			       Seat.seat_status, Seat.seat_row_nr, Seat.seat_nr, PlaceMapZone.pmz_name, Seat.seat_pmp_id
+             FROM Seat
++    		LEFT OUTER JOIN PlaceMapZone
++  			ON Seat.seat_zone_id = PlaceMapZone.pmz_id
+             WHERE seat_order_id="._esc($order_id);
+     if($res=ShopDB::query($query)){
+       while($rec=shopDB::fetch_assoc($res)){
+         $seat = new Seat;
+-        $seat->_columns   = array('#seat_id', '#seat_user_id', '#seat_order_id', 'seat_ts', 'seat_sid',
+-                              'seat_price', '#seat_discount_id', 'seat_code', '*seat_status');
++  		$seat->_columns = array('#seat_id', '#seat_user_id', '#seat_order_id', '#seat_category_id', '#seat_event_id', 'seat_ts', 'seat_sid',
++  			'seat_price', '#seat_discount_id', 'seat_code', '*seat_status', '#seat_row_nr', 'seat_nr', 'seat_zone_name', 'seat_pmp_id');
+         $seat->_fill($rec);
+         $pmp[$seat->seat_id]=$seat;
+       }
+@@ -319,6 +347,8 @@ class Seat  Extends Model {
+   //$seats = array(array('seat_id'=>,'event_id'=>,category_id=>,pmp_id=>))
+   function cancel($seats, $user_id, $nocommit=FALSE){
+     global $_SHOP;
++    $category_stat = Array();
++    $event_stat = Array();
+     if(!ShopDB::begin('cancel seats')){
+       return FALSE;
+     }
+@@ -346,8 +376,18 @@ class Seat  Extends Model {
+            return FALSE;
+         }
+       }
+-      $event_stat[$seat['event_id']]++;
+-      $category_stat[$seat['category_id']]++;
++      if (array_key_exists($seat['event_id'], $event_stat)) {
++      	$event_stat[$seat['event_id']]++;
++      }
++      else {
++      	$event_stat[$seat['event_id']] = 1;
++      }
++      if (array_key_exists($seat['category_id'], $category_stat)) {
++      	$category_stat[$seat['category_id']]++;
++      }
++      else {
++      	$category_stat[$seat['category_id']] = 1;
++      }
+       $pmp_check[$seat['pmp_id']]=1;
+     }
+ 
+diff -rupN fusionticket.orig/includes/shop_plugins/function.placemap-civicrm.php fusionticket/includes/shop_plugins/function.placemap-civicrm.php
+--- fusionticket.orig/includes/shop_plugins/function.placemap-civicrm.php	1969-12-31 16:00:00.000000000 -0800
++++ fusionticket/includes/shop_plugins/function.placemap-civicrm.php	2012-10-26 12:11:49.573836000 -0700
+@@ -0,0 +1,353 @@
++<?php
++/**
++%%%copyright%%%
++ *
++ * FusionTicket - ticket reservation system
++ *  Copyright (C) 2007-2012 Christopher Jenkins, Niels, Lou. All rights reserved.
++ *
++ * Original Design:
++ *	phpMyTicket - ticket reservation system
++ * 	Copyright (C) 2004-2005 Anna Putrino, Stanislav Chachkov. All rights reserved.
++ *
++ * This file is part of FusionTicket.
++ *
++ * This file may be distributed and/or modified under the terms of the
++ * "GNU General Public License" version 3 as published by the Free
++ * Software Foundation and appearing in the file LICENSE included in
++ * the packaging of this file.
++ *
++ * This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING
++ * THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++ * PURPOSE.
++ *
++ * Any links or references to Fusion Ticket must be left in under our licensing agreement.
++ *
++ * By USING this file you are agreeing to the above terms of use. REMOVING this licence does NOT
++ * remove your obligation to the terms of use.
++ *
++ * The "GNU General Public License" (GPL) is available at
++ * http://www.gnu.org/copyleft/gpl.html.
++ *
++ * Contact help@fusionticket.com if any conditions of this licencing isn't
++ * clear to you.
++ */
++
++function smarty_function_placemap($params, $smarty){
++
++    $pz = preg_match(strtolower('/no|0|false/'), $params['print_zone']);
++    $imagesize = is ($params['imagesize'], 16);
++    return placeMapDraw($params['category'], $params['restrict'], !$pz, $params['area'], $imagesize, is($params['seatlimit'],15));
++
++}
++
++function placeMapDraw($category, $restrict = false, $print_zone = true, $area = 'www', $imagesize = 16, $seatlimit = 15) {
++    global $_SHOP;
++    $imgpath = CRM_Core_Resources::singleton()->getUrl('org.bactheatre.civiboxoffice', 'fusionticket/images/');
++
++    $l_row = ' '.con('place_row').' ';
++    $l_seat = ' '.con('place_seat').' ';
++
++    $cat_ident = $category['category_ident'];
++    $cat_num = 0;
++    switch ($category['category_numbering']) {
++        case 'both':
++            $cat_num = 3;
++            break;
++        case 'rows':
++            $cat_num = 2;
++            break;
++        case 'seat':
++            $cat_num = 1;
++            break;
++    }
++    $res = '';
++    $pmp = PlaceMapPart::loadFull($category['category_pmp_id']);
++    if (!$pmp) {
++      return '';
++    }
++  //  print_r($category);
++    $cats = $pmp->categories;
++    $zones = $pmp->zones;
++
++    $pmp->check_cache();
++
++    if ($restrict) {
++        $bounds = $pmp->category_bounds($cat_ident);
++        $left   = $bounds['left'];
++        $right  = $bounds['right'];
++        $top    = $bounds['top'];
++        $bottom = $bounds['bottom'];
++
++    } else {
++        $left   = 0;
++        $right  = $pmp->pmp_width - 1;
++        $top    = 0;
++        $bottom = $pmp->pmp_height - 1;
++    }
++/*    if ($pmp->pmp_shift) {
++        $cspan = 'colspan=2';
++        $ml[1] = $mr[0] = '<img src="".$imgpath."dot.gif" style="width:5;height=10">';
++        $res .= '<tr>';
++        $width2 = ($right - $left) * 2 + 1;
++        for ($k = 0; $k <= $width2; $k++) {
++            $res .= '<img src="".$imgpath."dot.gif" style="width:5;height:10">';
++        }
++        $res .= '<br/>';
++    }
++*/
++//    print_r($pmp);
++ // $res = print_r($bounds,true).' '.$left.', '.$right.','. $top.','. $bottom;
++
++   $ml[1] = $ml[0] = '';
++   $mr[1] = $mr[0] = '';
++    if ($pmp->pmp_shift) {
++      $cspan = "colspan='2'";
++     // $ml[1] = "<td class='ShiftRight pm_seatmap'>z</td>";
++       $ml[1] = $mr[0] = "<td class='pm_shiftright' ><img style='width:".((int)($imagesize/2))."px;' border=0 src='".$imgpath."dot.gif' height='100%'></td>";
++        $res .= '<tr>';
++        $width2 = ($right - $left) * 2 + 2;
++        for ($k = 0; $k <= $width2; $k++) {
++            $res .= '<td class="pm_shiftright" style="heigth:1px;"><img src="'.$imgpath.'dot.gif" style="width:'.((int)($imagesize/2)).'px; height:0px"></td>';
++        }
++        $res .= '</tr>';
++
++     } else {
++      $cspan = "";
++    }
++
++    for ($j = $top; $j <= $bottom; $j++) {
++       $first = '';
++       $res .= '<tr>';
++       $res .= $ml[$j % 2];
++
++        for ($k = $left; $k <= $right; $k++) {
++            $seat = $pmp->data[$j][$k];
++            $sty ='';
++            $reszz= "&nbsp;";
++            $cspan =($pmp->pmp_shift)?'colspan=2':'';
++            if ($seat[PM_ZONE] === 'L') {
++                if ($seat[PM_LABEL_TYPE] == 'RE' and $irow = $pmp->data[$j][$k + 1][PM_ROW]) {
++                    $reszz= "<div class='pm_seatmap'>$irow</div>";
++                } elseif ($seat[PM_LABEL_TYPE] == 'RW' and $irow = $pmp->data[$j][$k - 1][PM_ROW]) {
++                    $reszz= "<div class='pm_seatmap'>$irow</div>";
++                } elseif ($seat[PM_LABEL_TYPE] == 'SS' and $iseat = $pmp->data[$j + 1][$k][PM_SEAT]) {
++                    $reszz= "<div class='pm_seatmap'>$iseat</div>";
++                } elseif ($seat[PM_LABEL_TYPE] == 'SN' and $iseat = $pmp->data[$j - 1][$k][PM_SEAT]) {
++                    $reszz= "<div class='pm_seatmap'>$iseat</div>";
++                } else
++              if ($seat[PM_LABEL_TYPE] == 'T') {
++                  $cspan = 'style="text-align:center;" colspan="'.(($pmp->pmp_shift)? ($seat[PM_LABEL_SIZE]*2):($seat[PM_LABEL_SIZE])).'"';
++                  if ($seat[PM_LABEL_SIZE] == 0) {
++                     continue;
++                  } elseif (strlen($seat[PM_LABEL_TEXT])>3 * $seat[PM_LABEL_SIZE]){
++                     $reszz= "<img class='pm_seatmap' src='".$imgpath."info.gif' alt='{$seat[PM_LABEL_TEXT]}' title='{$seat[PM_LABEL_TEXT]}'>";
++                  } else {
++                     $reszz= "{$seat[PM_LABEL_TEXT]}";
++                  }
++                } else
++                if ($seat[PM_LABEL_TYPE] == 'E') {
++                  $reszz = "<img class='pm_seatmap' src='".$imgpath."exit.gif' alt='exit' title='exit'>";
++                } else {
++                  $reszz = "<img class='pm_seatmap' style='{$sty};border-color:red' border=0 src='".$imgpath."dot.gif' title='{$seat[PM_LABEL_TYPE]}'>";
++                }
++            } elseif ($seat[PM_ZONE] and $seat[PM_CATEGORY]) {
++                $zone = $zones[$seat[PM_ZONE]];
++                $cat  = $cats[$seat[PM_CATEGORY]];
++                $cat_id = $seat[PM_CATEGORY];
++           //     $sty .= "background-color:{$zone->pmz_color};";
++
++                if (isset($pmp->data[$j - 1][$k][PM_CATEGORY]) && ($pmp->data[$j - 1][$k][PM_CATEGORY] != $cat_id)) {
++                    $sty .= "border-top-color: {$cat->category_color};";
++                }
++
++                if (isset($pmp->data[$j + 1][$k][PM_CATEGORY]) && ($pmp->data[$j + 1][$k][PM_CATEGORY] != $cat_id)) {
++                    $sty .= "border-bottom-color: {$cat->category_color};";
++                }
++
++                if (isset($pmp->data[$j][$k - 1][PM_CATEGORY]) && ($pmp->data[$j][$k - 1][PM_CATEGORY] != $cat_id)) {
++                    $sty .= "border-left-color: {$cat->category_color};";
++                }
++
++                if (isset($pmp->data[$j][$k + 1][PM_CATEGORY]) && ($pmp->data[$j][$k + 1][PM_CATEGORY] != $cat_id)) {
++                    $sty .= "border-right-color: {$cat->category_color};";
++                }
++                $sty .= "; ";
++
++                //Empty seats
++                if ((! isset($seat[PM_STATUS])) || ($seat[PM_STATUS]== PM_STATUS_FREE)) {
++                    if ($seat[PM_CATEGORY] == $cat_ident) {
++                        $reszz = "<input type='hidden' id='place{$seat[PM_ID]}' class='myplaces' name='place[{$seat[PM_ID]}]' value='0'>";
++                        $reszz .= "<img class='pm_seatmap pm_check' style='{$sty}' id='seat{$seat[PM_ID]}' onclick='javascript:gridClick({$seat[PM_ID]});' src='".$imgpath."seatfree.png' title='";
++                        if ($print_zone) {
++                            $reszz .= $zone->pmz_name . ' ';
++                        }
++                        if (($cat_num & 2) and $seat[PM_ROW] != '0') {
++                            $reszz .= $l_row . $seat[PM_ROW];
++                        }
++                        if (($cat_num & 1) and $seat[PM_SEAT] != '0') {
++                            $reszz .= $l_seat . $seat[PM_SEAT];
++                        }
++                        $reszz .= "'>";
++                    } else {
++                      $reszz = "<img class='pm_seatmap' style='{$sty};background-color:Gainsboro' border=0 src='".$imgpath."seatdisable.png'>";
++                    }
++                    ////////////Reserved seats, they will only be selectable if you have area='pos' set in cat...tpl
++                } elseif ($seat[PM_STATUS] == PM_STATUS_RESP && $area === 'pos' && $seat[PM_CATEGORY] == $cat_ident) {
++                    $zone = $zones[$seat[PM_ZONE]];
++                    $reszz = "<img class='pm_seatmap' style='{$sty}' src='".$imgpath."seatselect.png' title='";
++                    if ($print_zone) {
++                        $reszz .= $zone->pmz_name . ': ';
++                    }
++                    if (($cat_num & 2) and $seat[PM_ROW] != '0') {
++                        $reszz .= $l_row . $seat[PM_ROW];
++                    }
++                    if (($cat_num & 1) and $seat[PM_SEAT] != '0') {
++                        $reszz .= $l_seat . $seat[PM_SEAT];
++                    }
++                    $reszz .= "'>";
++                } else {
++                  if ($seat[PM_CATEGORY] != $cat_ident) {
++                    $sty .= ';background-color:Gainsboro';
++                  }
++                  $reszz = "<img class='pm_seatmap' style='{$sty}' src='".$imgpath."seatused.png'>";
++                }
++            } elseif ($seat[PM_ZONE]) {
++                $reszz = "<img class='pm_seatmap' style='{$sty}' border=0 src='".$imgpath."dot.gif'>";
++            } else  {
++               $reszz = "<img class='pm_seatmap' style='{$sty}' border=0 src='".$imgpath."dot.gif' />";
++            }
++            $res .= "<td {$cspan} class='pm_seatmap'>{$reszz}</td>";
++            $first ='';
++        }
++        $res .= $mr[$j % 2]."</tr>";
++    }
++
++    /*            <script language=\"JavaScript\" type=\"text/javascript\" src=\"wz_tooltip.js\"></script>    ";*/
++
++
++    if (isset($_SHOP->lang)) {
++    	$l = $_SHOP->lang;
++    }
++
++    switch ($pmp->pmp_scene) {
++        case 'south':
++            $res = "<table border=0 cellspacing=0 cellpadding=0>
++                      <tr>
++                        <td>
++                          <table class='pm_table' border=0  cellspacing=0 cellpadding=0>$res</table>
++                        </td>
++                      </tr>
++                      <tr>
++                        <td align='center' valign='middle' style='vertical-align:middle; text-align:center'>
++                          <img src='".$imgpath."scene_h_en.png'>
++                        </td>
++                      </tr>
++                    </table>";
++            break;
++        case 'west':
++           $res = "<table border=0 cellspacing=0 cellpadding=0>
++                     <tr>
++                       <td align='center' valign='middle' style='vertical-align:middle; text-align:center'>
++                         <img src='".$imgpath."scene_v_en.png'>
++                       </td>
++                       <td>
++                         <table border=0 class='pm_table' cellspacing=0 cellpadding=0>$res</table>
++                       </td>
++                     </tr>
++                   </table>";
++            break;
++        case 'east':
++            $res = "<table border=0  cellspacing=0 cellpadding=0>
++                      <tr>
++                        <td>
++                          <table border=0 class='pm_table' cellspacing=0 cellpadding=0>$res</table>
++                        </td>
++                        <td align='center' valign='middle' style='vertical-align:middle; text-align:center'>
++                          <img src='".$imgpath."scene_v_en.png'>
++                        </td>
++                      </tr>
++                    </table>";
++            break;
++        case 'north':
++            $res = "<table border=0 cellspacing=0 cellpadding=0>
++               <tr>
++                 <td align='center' valign='middle' style='vertical-align:middle; text-align:center'>
++                   <img src='".$imgpath."scene_h_en.png'>
++                 </td>
++               </tr>
++               <tr>
++                 <td>
++                   <table border=0 class='pm_table' cellspacing=0 cellpadding=0>$res</table>
++                 </td>
++               </tr>
++             </table>";
++          break;
++        default:
++            $res = "<table border=0 cellspacing=0 cellpadding=0>
++               <tr>
++                 <td>
++                   <table border=0 class='pm_table' cellspacing=0 cellpadding=0>$res</table>
++                 </td>
++               </tr>
++             </table>";
++    }
++    $resx ='
++         <input id="maxseats" value="'.$seatlimit.'" type="hidden" size="3" maxlength="5">
++         <input id="selectedseats" value="0" type="hidden" size="3" maxlength="5">
++         <script>
++          function gridClick(id) {
++            x = cj("#place"+id).val();';
++    if ($seatlimit >= 0) {
++      $resx .='
++            c = cj("#maxseats").val();
++            sel = cj("#selectedseats").val();
++            if ((x == 0) && (c >0)) {
++              c--;
++              sel++;
++            } else if (( x != 0) && (c < '.$seatlimit.' )) {
++              c++;
++              sel--;
++            } else if (c == 0) {
++              alert("'.con('max_seats_reached').'");
++              return;
++            }
++            cj("#maxseats").val(c);
++            cj("#selectedseats").val(sel);';
++    }
++      $resx .='
++
++            if (x == 0) {
++              cj("#seat"+id).attr("src","'.$imgpath.'seatselect.png");
++              cj("#place"+id).val(id);
++            } else {
++              cj("#seat"+id).attr("src","'.$imgpath.'seatfree.png");
++              cj("#place"+id).val(0);
++            }
++          }
++     </script>
++';
++   $res = $resx .'
++<style type="text/css">
++  .pm_seatmap {
++     width:'.($imagesize).'px;
++     height:'.($imagesize).'px;
++     font-size: '.((int)($imagesize/1.75)).'px;
++  }
++  .pm_shiftright {
++     width:'.((int)($imagesize/2)).'px;
++     height:'.($imagesize).'px;
++     border: 0px;
++     padding: 0px  !important;
++     margin:0px  !important;
++  }
++    .pm_shiftright img {
++     border:  0px;
++     padding: 0px  !important;
++     margin:  0px  !important;
++  }
++</style>'."\n".$res;
++    return $res;
++
++}
++
++?>

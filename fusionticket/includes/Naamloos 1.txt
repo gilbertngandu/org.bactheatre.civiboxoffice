@@ -1,0 +1,36 @@
+Release Note Details
+
+
+
+- fixed the default theme. i forgot to update the css files
+- added the artisteer files for the default theme,
+
+
+- fixed some issues with the POS.
+
+- update the new config system to allow saving (img) files.
+
+- fixed loading the config settings from the db.
+
+- some small fixes to the configuration screen.
+
+- more work on the new Configuration screen
+
+- Changed the code so only the one required column from the Categories table is pulled when displaying an event,
+- updated the version number because there are db changes
+
+
+
+- fixed a lot of issues created in mantis
+- added an easy way to test checkout pages.
+^ to use this function you need to tell
+^ ^ the template name in page=
+^ ^ and the sor code of an already created order.
+
+
+- but back the smarty result trimming that was put in the old smarty
+^
+- lots of small changes.
+
+- added type of pdf document.
+^

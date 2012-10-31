@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<AutomatorProject >
+<ProjectSettings>
+<Data>
+  <projectguid>9095111F-9DCE-4887-8FC0-B90162FDE1B1</projectguid>
+  <projectname>fusionticket_build</projectname>
+  <projectfolder>D:\web\www\Beta6.5\includes\documents</projectfolder>
+  <createdate>77217</createdate>
+  <createtime>5143875</createtime>
+  <lastupdatedate>77217</lastupdatedate>
+  <lastupdatetime>5161627</lastupdatetime>
+  <allowfullexecute>0</allowfullexecute>
+  <demoproject>0</demoproject>
+</Data>
+</ProjectSettings>
+<ProjectItems>
+<Data>
+  <linenumber>1</linenumber>
+  <checked>1</checked>
+  <name>New Item</name>
+  <projectguid>9095111F-9DCE-4887-8FC0-B90162FDE1B1</projectguid>
+  <guid>587214AF-2DF2-4D60-818F-2449BCAFAF9E</guid>
+</Data>
+</ProjectItems>
+<ActionItems>
+<Data>
+  <itemguid>B93E7C9A-E381-4A30-B456-7C92E4812A18</itemguid>
+  <projectitemguid>587214AF-2DF2-4D60-818F-2449BCAFAF9E</projectitemguid>
+  <actionguid>D64E3B56-A37B-43C4-9DED-E9033EB21F86</actionguid>
+  <executeitem>1</executeitem>
+  <linenumber>1</linenumber>
+  <projectlinenumber>1</projectlinenumber>
+  <condition></condition>
+</Data>
+</ActionItems>
+</AutomatorProject>

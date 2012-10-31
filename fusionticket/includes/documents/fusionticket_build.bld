@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project version='8' encrypted='1'>
+	<steps type='0'>
+		<step action='Group'>
+			<buildfailsteps type='11'>0</buildfailsteps>
+			<name>Building FusionTicket </name>
+		</step>
+		<step action='Subversion'>
+			<DryRun type='11'>-1</DryRun>
+			<Host>subversion.assembla.com/svn/fusion-ticket/trunk</Host>
+			<LocalPath>%targetfolder%</LocalPath>
+			<Password encrypted='1'>Bc3ePLM8beGgari4oKH3gw==</Password>
+			<Protocol>https</Protocol>
+			<Subcommand>export</Subcommand>
+			<Username>ft_ohloh</Username>
+			<buildfailsteps type='11'>0</buildfailsteps>
+			<indent type='3'>1</indent>
+			<name>Subversion</name>
+		</step>
+		<step action='Copy Files'>
+			<Converted type='11'>-1</Converted>
+			<Delay>15</Delay>
+			<DestDir>D:\test\beta71</DestDir>
+			<Empty type='11'>-1</Empty>
+			<ExclExt><![CDATA[*.bak
+/temp
+/.svn
+/langedit
+/tests
+/tools
+/pmp
+/files
+/includes/plugins/*.*
+/includes/classes/payments/*.*
+]]></ExclExt>
+			<Ext><![CDATA[
+]]></Ext>
+			<FailNone type='11'>-1</FailNone>
+			<LogCopied type='11'>-1</LogCopied>
+			<Purge type='11'>-1</Purge>
+			<ReadOnly type='11'>-1</ReadOnly>
+			<Recurse type='11'>-1</Recurse>
+			<Retries>10</Retries>
+			<SourceDir>D:\web\www\Beta6.5</SourceDir>
+			<TBD type='11'>-1</TBD>
+			<buildfailsteps type='11'>0</buildfailsteps>
+			<indent type='3'>1</indent>
+			<name>Copy main files</name>
+		</step></steps>
+	<macros>
+		<macro name='sourcefolder'>
+			<value>D:\web\www\Beta6.5\</value>
+		</macro>
+		<macro name='targetfolder'>
+			<value>D:\test\beta71\</value>
+		</macro></macros>
+</project>

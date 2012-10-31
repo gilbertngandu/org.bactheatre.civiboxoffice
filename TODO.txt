@@ -1,0 +1,13 @@
+1) Add seat assignment token(s) for confirmation/reminder emails.  Use 
+regions for this?
+
+2) Extend hooks and .extra.tpl to allow seat selection for registrations
+that come through the backend/admin pages.
+
+3) Add barcodes to ThankYou page and confirmation emails.
+
+4) Add event check-in page to be used with USB barcode scanner.
+
+5) Integrate price set line items and FT categories to allow multiple
+FT categories per Civi event.
+

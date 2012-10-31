@@ -1,0 +1,15 @@
+
+  <div class="art-box art-block">
+    <div class="art-box-body art-block-body">
+      <div class="art-bar art-blockheader">
+          <h3 class="t">Nieuw blok</h3>
+      </div>
+      <div class="art-box art-blockcontent">
+        <div class="art-box-body art-blockcontent-body">
+          <p>Enter Block content here...</p>                
+          <div class="cleared"></div>
+        </div>
+      </div>
+  		<div class="cleared"></div>
+    </div>
+  </div>

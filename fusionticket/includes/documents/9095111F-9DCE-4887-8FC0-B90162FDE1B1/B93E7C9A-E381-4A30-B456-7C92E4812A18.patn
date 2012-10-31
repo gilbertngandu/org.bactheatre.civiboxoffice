@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<AutomatorAction >
+<AutomatorInformation>
+<Data>
+  <value1>D:\web\www\Beta6.5\_.htaccess.0.bak</value1>
+  <value2></value2>
+  <value3>NOT Overwriting existing</value3>
+  <value4></value4>
+  <value5></value5>
+</Data>
+</AutomatorInformation>
+<CopyMultiFilesOptions>
+<Data>
+  <destination></destination>
+  <overwriteexisting>0</overwriteexisting>
+</Data>
+</CopyMultiFilesOptions>
+<CopyMultiFilesSource>
+<Data>
+  <linenumber>1</linenumber>
+  <filename>D:\web\www\Beta6.5\_.htaccess.0.bak</filename>
+</Data>
+</CopyMultiFilesSource>
+</AutomatorAction>

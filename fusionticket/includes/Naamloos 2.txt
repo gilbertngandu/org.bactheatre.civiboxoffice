@@ -1,0 +1,197 @@
+[Whole system]
+
+Enhancments:
+Event-type as editable database table.
+Discount options.
+PDF Files emailed always shown as 'invoice'.
+add file name HTML comment to each *.tpl file.
+Question about Fee's..
+Discounts for web or pos.
+moved the set shipment status to the printorder() method and is send once when the tickets are printed.
+extend the admin system so we can have tooltips shown hovering the field label. icon would be nice to have
+implemented fee per seat instead per order.
+removed posablity to change the (email/pdf) template name.
+added fix made by lxsparks to rename the invoice/receipt pdf to the right name.
+text area fields now sided to 100%
+modified the mycart class so that the all ordered tickets get the latest expire time every time the user adds more tickets.
+added a redirect option.
+Added webshop/pos fields for the category table
+reworked the tab-page views a little bit so plugins can add there own tabs in menuitems.
+implemented a strict ACL support for the admin section.
+Every admin view with tabs has also the option to block access
+Every admin view can also add restrictions to the called action
+The controller class structure is refectored to allow a better ACL support.
+implementation of Redirect system to secure dubble order intery etc.
+logging of payments are now also shown in the orderstatus log
+added a new option to the discount system now you can set discounts for the pos or webshop only
+
+Other:
+changed the email from and to addresses from utf8 to ansi hoping to fix isues
+updatd the smarty lib
+updated the lib shiftmailer to the latest version.
+updated html2pdf to the latest version
+updated jquery and jquery.ui
+renamed the install_db.php to data_dp.php
+removed the simpletest libs it is not used by ft at all
+updated all copyright headers in the files.
+updated the eph_mollie
+Migrated the config/init_admin.php, init_control.php etc in to there resepective Controller class.
+removed old language files and put it in a zip-file
+updated the language file.
+reworking the language editor to a better use
+Block functions need to be changed $smarty->_SHOP_db_res need to be replaced by $smarty->pushBlockData($dbrec); and function popBlockData();
+
+Bugs:
+Multi-event sub events can have the wrong cat_id applied to the event's discounts (NielsNL) - afgesloten.
+Some text are harcoded (NielsNL) - afgesloten.
+Minor tweaks / php errors / dutch language.
+Logging of Credit Card Numbers and User Information is a Security Problem.
+fixed the templates where the order_date was not shown.
+removed writing error log results to the screen, when there is no connection to our server.
+added some extra control to secure the payments etc.
+fixed issue with copying master discount to a sub event
+fixed issue with payment handlers that uses fsockopen and returning transfer-encoding: chunked data
+fixed some table enum's
+fixed mixed use of canceled and cancelled and changed it into cancelled whole system.
+FT had a buggy order_status for paid orders. I changed this from payed to paid.
+
+[POS-system]
+Enhenchments:
+spacial discounts for POS only.
+Show event titel in POS when opening the seat plan..
+implemented the possibility to allow POS created patrons to login into the webshop.
+Changed the POS so ordering tickets made easier
+
+Others:
+pos.css is never used.
+updated the jqgrid to the last version.
+removed some unused jquery scripts from the pos.
+
+Bugs:
+patron box diplays wrong at startup.
+Reserving Seats in POS results in unnecessary email with link to Webshop (NielsNL) - afgesloten.
+pos: order status is not correct.
+sold seats show up as free after 2 POS systems select overlapping no. of seats in the seatmap.
+Get buy 2 Cash ticket transactions in a row.
+Problem with selecting a username after searching in pos from FF 10.0.
+Registration fails etc.
+Tel/Fax numbers - won't accept a space (lxsparks) - afgemeld.
+Can not use an existing email for previous registered users ordering tickets by phone in POS entry screen.
+fixed issue 335: The lists in the POS where not showing the selected state
+fixed issue in the POS to allow creating multiple orders.
+fixed issue where you cant login to the pos anymore without strict POS use.
+fixed issue in POS where the patron details are shown.
+fixed some css image directions for the pos
+fixed issue setting the paid and sent status twice in the POS overview.
+POS users without a existing sales point are now not allowed to login anymore.
+fixed loading pos ajax calls
+
+[Webshop]
+
+Enhencments:
+[TPL] Overhall Webshop.
+Added an option to let the patron see his order using the link $order_link in the emails
+added the possibility to print the invoice/recept and tickets
+On-Page SEO of the webshop.
+Add Print Tickets link to order completed page.
+Terms of Conditions.
+No cancel button or way to cancel transaction.
+Add Meta to Head for each Event.
+Reworked the personal pages
+added tooltip option to input labels. now also in the webshop
+Shows a custom message in Webshop if Event has no Categories to display
+add validation on the login form
+the event description is now shown as meta data
+you can add meta keywords to an event.
+user logins are now logged so you can see when they last logged in. (thanks to Lxsparks)
+Allowing the calendar to be shown within an other page without showing the theme.  to use this add inframe=true to the calender
+The agb is now shown inside a DIV window
+the webshop result page shows the ticket button when paid.
+
+Others:
+dropped old default theme (it is not compatible with new webshop)
+website SMARTY the organizer data are available directly without the use of the {$organizer} object.
+the validate tag in a gui->input needs to be an array like validate=['value'='var']
+updating the shinymusic theme. (work in progress)
+
+Bugs:
+Aktivation text confuses first time user.
+ERRORR in personal page order details.
+the count of ticket and alert is not working.
+added a welcome message when a member is logged in.
+fixed forgot password procedure.
+updated the new default theme.
+fixed form validation by jquery
+fixed issue with activation patrons
+
+[Back-office (admin)]
+Enhenchments:
+make user details editable (lxsparks). Admin can not update or delete existing Member information if member information requires modification or is not valid.
+edit multiple text lables in the seatmap at the same time.
+"VIEWABLE/UNVIEWABLE WEBSHOP" and "VIEWABLE/UNVIEWABLE POS" button for each category (lxsparks).
+In admin->ticket tracking->order by event, the ability to sort desc (lxsparks) - afgemeld.
+added a realname field for administrators
+added the possibility to clear/remove all the log files and a way to clear the cache
+now can sort ticket tracking/Events Ascending or Descending
+Added the possibility to send bulk PDF's
+Like in the orderhandling list; the new discount list can now also show/hide the discount in the pos and webshop.
+it is now possible to add a new catergory also after the event is published and set to no sale;3 only the open seating is allowed then.
+implementing new Configuration screen.
+^ The merchant details are now managed trough the new configuration screen.
+^ using a dynamic storage of the setting.
+^ Also the configuration options are dynamic
+
+Others:
+Add pay button in Order/Unpaid (administrator) - afgesloten.
+the event accordion view can now also close all sub-views
+added a realname field for administrators, needs some extra work to show it somewhere.
+
+Bugs:
+Possible typo in file "model.adminlink.php".
+PayPal IPN always fails verification.
+Add a 'clear cache' function to the admin section.
+Shippment status can easily reflect wrong status.
+back office in english and website in french.
+De master event status icon can be change when you use the checkboxes in the event editor.
+the download link for backup sql is wrong..
+Discount category not copied to new sub-event.
+fixed issue with searching tickets with the barcode
+removed the button image for the event_status button by main events
+changed the button sequence in the order overview/ticket tracker
+fixed the admin worksheet width
+some work to disable the possibility to publish a main event.
+changed first/last name order in the search form
+edited link on Users>Orders list so Order opened up and not redirected back to empty search page
+You cant delete Sales Points when there are POS users connected.
+fixed increment_size it did called the wrong function.
+
+[Ticket takers]
+Enhenchments:
+Add when a who checked a ticket.
+Added Discount and barcode to ticket takers.
+logging of TicketTaker actions are now also shown in the orderstatus
+added beeps by checking tickets (thanks to sclarke)
+
+Others:
+cleaned up the control views and separated the search function into a new file
+^ the control section uses now the same template as the admin section.
+
+Bugs:
+fixed issue with the reset button in the ticket taker.
+
+[Install]
+Enhenchments:
+updated the install procedure to handle the new configuration system
+
+Bugs:
+Merchant details "Name" escapes hyphen charater incorrectly.
+Added: $_SHOP->images_url= $_SHOP->root_base."../images/"; at Line 73. init_commong.php is not called during install and the images root base is not defined.
+
+
+[plugins]
+Enhenchments:
+added a json plugin interface so you can access a plugin from outside FT.
+replaced the custom plugin with two separated plugins one only for the barcode and one only to change the playment discription.
+added a example how to extend the admin pageas with new tabs.
+new plugin added for reminder management
+you can now add tables from inside plugins.

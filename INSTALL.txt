@@ -1,0 +1,47 @@
+INSTALLATION:
+
+1) Create a fusionticket database, i.e:
+
+mysqladmin -u myuser -p create fusionticket
+
+2) Install/enable the CiviBoxOffice extension in CiviCRM under 
+Administer -> System Settings -> Manage Extensions
+
+3) Rebuild civicrm menus if necessary by visiting:
+http://www.mysite.org/civicrm/menu/rebuild?reset=1
+
+4) Under the Events menu, access the FusionTicket admin interface by
+going to Events -> Manage Seat Maps.
+
+5) Complete the FusionTicket installation process.  You will be asked for
+the name/user/password for the database from step 1.  You may wish to 
+install the demonstration data which has a few demo seat maps pre-built.
+Merchant info and most other settings are not relevant since they will not
+be used in this integration.
+
+6) Now when you create an event, you should see a "Seat Map" selector
+on the event info & settings page, just under the event start/end time
+fields.  If you select and save a seat map setting, the seat map should
+appear on the event's registration page.
+
+7) A decent tutorial on creating FusionTicket seat maps is available
+on YouTube:  http://www.youtube.com/watch?v=Jb-QPw4dS4E
+
+NOTES:
+
+1) There is currently a bug in which the seat map setting is ignored if
+you set it as part of the event creation process.  To work around, first
+create the event, then edit event info & settings, set the seat map and
+save.
+
+2) Your Civi events must use a price set where at least one price line 
+has a participant count.
+
+3) FusionTicket supports multi-price seat maps, where different sections
+have different prices.  FT refers to these price zones as "Categories."  
+Currently CiviBoxOffice only supports one FT Category per Civi event. 
+Recommend using FT seat maps with only one category for now.
+
+4) The FusionTicket source included in this extension has already 
+been patched.  The file ft.patch is included to show diffs from the stock
+FT 7.0b distribution.
