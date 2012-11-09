@@ -516,14 +516,8 @@ class PlaceMapPart Extends Model {
             }
       	  } else
       	     return self::_abort('cant_create_seat_zone_missing_cat');
-
-      	  if (isset($stats[$category->category_ident])) {
-	          $stats[$category->category_ident]++;
-      	  }
-      	  else {
-      	      $stats[$category->category_ident] = 1;
-      	  }
-      	  $pmps[$category->category_ident] = $this->pmp_id;
+          $stats[$category->category_ident]++;
+          $pmps[$category->category_ident] = $this->pmp_id;
         }
       }
     }

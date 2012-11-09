@@ -103,7 +103,11 @@ function civiboxoffice_civicrm_navigationMenu( &$params ) {
 
 function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 	// lookup seat map for event and assign to form
-	if (is_a($form, 'CRM_Event_Form_Registration_Register')) {
+	if (is_a($form, 'CRM_Event_Form_Registration_Register') || is_a($form, 'CRM_Event_Form_Participant') && ! $_POST) {		
+        $eid = $form->getVar('_eventId');
+        if (! isset($eid)) {
+        	return;
+        }
 		ft_security();
 		require_once('fusionticket/includes/classes/class.router.php');
 		require_once('fusionticket/includes/shop_plugins/function.placemap-civicrm.php');
@@ -113,7 +117,7 @@ function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 		$query = 'SELECT category_id, category_event_id, category_pmp_id,
       		           category_ident, category_numbering
       		    FROM Category
-      		    WHERE category_data LIKE "%civicrm_event_id=' . $form->getVar('_eventId') . '%"';
+      		    WHERE category_data LIKE "%civicrm_event_id=' . $eid . '%"';
 
 		if ($res=ShopDB::query($query)) {
 			$category = Array();
@@ -172,6 +176,7 @@ function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 			$form->assign('seatInfo', $seatarr);
 		}
 	}
+	
 	elseif (is_a($form, 'CRM_Event_Form_Registration_ThankYou') ||
 			is_a($form, 'CRM_Event_Form_ParticipantView')) {
 		// get any seats for this participant and assign them to form
@@ -197,8 +202,8 @@ function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 			}
 			$form->assign('seatInfo', $seatarr);
 		}
-
 	}
+	
 	elseif (is_a($form, 'CRM_Event_Form_ManageEvent_EventInfo')) {
 		// add seatmap selector to event configuration page
 		ft_security();
@@ -250,19 +255,19 @@ function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 	}
 }
 
-function civiboxoffice_civicrm_postProcess( $formName, &$form ) {
-	if (is_a($form, 'CRM_Event_Form_Registration_Register')) {
+function civiboxoffice_civicrm_validateForm( $formName, &$fields, &$files, &$form, &$errors ) {
+	if (is_a($form, 'CRM_Event_Form_Registration_Register') || is_a($form, 'CRM_Event_Form_Participant')) {
 		ft_security();
 		$submitvalues = $form->getVar('_submitValues');
-
+	
 		// check submitted form for seat assignments
 		if (array_key_exists('place', $submitvalues)) {
 			$seats = array_values(array_filter($submitvalues['place']));
 			require_once('fusionticket/includes/classes/class.router.php');
 			require_once('fusionticket/includes/classes/model.seat.php');
-
+	
 			// mark selected seats as on-hold
-			// we will move them to reserved in confirm postprocess
+			// we will move them to reserved in postProcess
 			$result = Seat::reservate( substr($form->controller->_key,
 					strlen($form->controller->_key) - 32),
 					$submitvalues['ft_category_event_id'],
@@ -270,41 +275,46 @@ function civiboxoffice_civicrm_postProcess( $formName, &$form ) {
 					$seats,
 					$submitvalues['ft_category_numbering'],
 					false, false);
-
+	
 			if ( !$result ) {
-				// if we couldn't reserve seats, set drupal error message and
-				// send user back to register page
-				drupal_set_message('Could not assign requested seats.  Please try again.', 'error');
-				drupal_goto($_SERVER['HTTP_REFERER']);
+				// if we couldn't reserve seats, set error on form
+                $errors['_qf_default'] = ts('One or more of the seats you selected became unavailable.  Please make an alternate selection.');
 			}
-			else {
-				return;
-			}
+			return;
 		}
 	}
-	else if (is_a($form, 'CRM_Event_Form_Registration_Confirm')) {
+}
+
+function civiboxoffice_civicrm_postProcess( $formName, &$form ) {
+	if (is_a($form, 'CRM_Event_Form_Registration_Confirm') || is_a($form, 'CRM_Event_Form_Participant')) {
 		ft_security();
+
 		require_once('fusionticket/includes/classes/class.router.php');
 		require_once('fusionticket/includes/classes/model.seat.php');
 		$seats = Seat::loadAllSid(substr($form->controller->_key, strlen($form->controller->_key) - 32));
-		$participantIDS = $form->getVar('_participantIDS');
-
+		
+		if (is_a($form, 'CRM_Event_Form_Registration_Confirm')) {
+			// if this is front-end registration, get new partID from _participantIDS array
+			// only expecting one participant ID -- use the first one
+			$participantIDS = $form->getVar('_participantIDS');
+ 		    $participant = $participantIDS[0];
+		}
+		else {
+			// if back-end registration, get new partID from _id
+			$participant = $form->getVar('_id');
+		}
+		
 		// if participant ID assigned and seats on-hold for this qfkey, move seats to reserved
-		if ($seats && $participantIDS[0]) {
+		if ($seats && $participant) {
 			foreach ($seats as $seatid => $seat) {
-				// only expecting one participant ID for now -- use the first one
-				$seat->seat_order_id = $participantIDS[0];
+				$seat->seat_order_id = $participant;
 
 				if (! $seat->save()) {
-					// Probably need better error handling here
-					drupal_set_message('error', 'Uh oh...  Seat reservation error.');
-					drupal_goto($_SERVER['HTTP_REFERRER']);
+					CRM_Core_Error::fatal('Could not confirm reserved seats for this participant.  Check seat database consistency.');
 				}
 			}
 		}
 	}
-
-
 	else {
 		return;
 	}
@@ -326,7 +336,7 @@ function civiboxoffice_civicrm_pre( $op, $objectName, $id, &$params ) {
 			}
 				
 			if ( ! Seat::cancel($seatarr, 0)) {
-				drupal_set_message('error', 'Error freeing seats.  Check Seat database consistency.');
+				CRM_Core_Session::setStatus('Error freeing seats associated with participant.  Check Seat database consistency.');
 			}
 		}
 	}
@@ -380,8 +390,7 @@ function civiboxoffice_civicrm_post( $op, $objectName, $id, &$params ) {
 			}
 		}
 		else {
-			// Need better error handling here
-			die("Selected FT event not found");
+			CRM_Core_Error::fatal("Selected FusionTicket event/category not found.");
 		}
 		
 		// save civi $_POST values so we can restore them later
@@ -414,7 +423,7 @@ function civiboxoffice_civicrm_post( $op, $objectName, $id, &$params ) {
 			  	' WHERE category_event_id=' . $ft_event_id .
 		        ' AND category_ident=' . $category_ident;
 		if (!ShopDB::query($query)) {
-			drupal_set_message('error', 'Error updating FT event/category.  Check database consistency.');
+			CRM_Core_Session::setStatus('Error updating FusionTicket event/category.  Check database consistency.');
 		}
 		
 		// restore civi $_POST values

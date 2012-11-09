@@ -83,7 +83,7 @@ class Event Extends Model {
    // print_r(debug_backtrace());
     if (ShopDB::begin('Save event')) {
 
-      if ((! empty($this->event_recur_type)) && (is($this->event_recur_type, "nothing") != "nothing")) {
+      if (is($this->event_recur_type, "nothing") != "nothing") {
          if (!$this->saveRecursion()) { return false;}
       } else {
         if(!$new){
@@ -198,10 +198,10 @@ class Event Extends Model {
 		$this->fillTime($data,'event_open');
 		$this->fillTime($data,'event_end');
     $this->fillDate($data,'event_date');
-  	if (isset($data['event_rep']) && ($data['event_rep'] == 'unique' )) {
+  	if ( $data['event_rep'] == 'unique' ) {
   		$data['event_rep'] = 'main,sub';
   	}
-    if ( isset($data['event_rep']) && (strpos($data['event_rep'],'sub')!== false) ){
+    if ( strpos($data['event_rep'],'sub')!== false ){
       $this->_columns   = array('#event_id', '*event_name', 'event_text', 'event_short_text', 'event_url',
                                 'event_image', 'event_webshop', '*event_ort_id', '#event_pm_id', '*event_date', '*event_time',
                                 'event_open', 'event_end', '*event_status', '*event_order_limit', 'event_template',
@@ -211,8 +211,8 @@ class Event Extends Model {
 
     }
 
-		if ( ! isset($data['event_id']) ) { //echo 'new:', $data['event_rep'],strpos($data['event_rep'],'sub'),$data['event_pm_ort_id'] ;
-			if ( (isset($data['event_rep']) && (strpos($data['event_rep'],'sub')!== false)) && (isset($data['event_pm_ort_id']) && ($data['event_pm_ort_id'] == 'no_pm')) ) {
+		if ( !$data['event_id'] ) { //echo 'new:', $data['event_rep'],strpos($data['event_rep'],'sub'),$data['event_pm_ort_id'] ;
+			if ( strpos($data['event_rep'],'sub')!== false and $data['event_pm_ort_id'] == 'no_pm' ) {
 				addError('event_pm_ort_id','mandatory');
 			}
 			if ( $data['event_pm_ort_id'] != 'no_pm' ) {
@@ -229,7 +229,7 @@ class Event Extends Model {
   }
 
   function _fill($arr, $nocheck=true)  {
-    if (isset($arr['event_rep']) && ($arr['event_rep']=='sub')) {
+    if ($arr['event_rep']=='sub') {
       $main=Event::load($arr['event_main_id'], FALSE);
       foreach($this->_columns as $key){
         self::getFieldtype($key);

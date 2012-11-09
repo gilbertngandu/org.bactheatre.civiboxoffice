@@ -5,7 +5,10 @@ INSTALLATION:
 mysqladmin -u myuser -p create fusionticket
 
 2) Install/enable the CiviBoxOffice extension in CiviCRM under 
-Administer -> System Settings -> Manage Extensions
+Administer -> System Settings -> Manage Extensions.  Make sure
+that your CiviCRM extensions directory is not inside your civicrm
+directory.  For example, if civicrm is installed in /var/www/civicrm
+then your extensions directory should *not* be /var/www/civicrm/extensions.
 
 3) Rebuild civicrm menus if necessary by visiting:
 http://www.mysite.org/civicrm/menu/rebuild?reset=1

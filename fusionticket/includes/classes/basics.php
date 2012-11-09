@@ -66,18 +66,17 @@ function diff_date($date1, $date2){
  * @param mixed $var     Variable to debug
  * @param boolean $escape  If set to true variables content will be html-escaped
  */
-/* function debug($var = false, $escape = false)
- *{
- *  if (DEBUG > 0) {
- *     print '<pre class="debug">';
- *     $var = print_r($var, true);
- *     if ($escape) {
- *        $var = htmlspecialchars($var);
- *     }
- *     print $var . '</pre>';
- *  }
- * }
- */
+function debug($var = false, $escape = false)
+{
+   if (DEBUG > 0) {
+      print '<pre class="debug">';
+      $var = print_r($var, true);
+      if ($escape) {
+         $var = htmlspecialchars($var);
+      }
+      print $var . '</pre>';
+   }
+}
 
 /**
  * Recursively strips slashes from all values in an array
@@ -489,9 +488,9 @@ function check_system() {
 
   if ($_SHOP->shopconfig_lastrun_int == 0) {
       return;
-  } // elseif ( $res['current_db_time'] <= $_SHOP->shopconfig_lastrun) {
-//      return;
-//  }
+  } elseif ( $res['current_db_time'] <= $_SHOP->shopconfig_lastrun) {
+      return;
+  }
 
   //print_r('run');
   //Checks to see if res time is enabled anything more than 9 will delete

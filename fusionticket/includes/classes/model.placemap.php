@@ -199,10 +199,8 @@ class PlaceMap Extends Model {
             addwarning('img_loading_problem_match');
           } else {
             $doc_name =  "pm_image_{$this->id}.{$ext[1]}";
-            if ((! file_exists($_SHOP->files_dir .$old_img)) || (!copy ($_SHOP->files_dir .$old_img, $_SHOP->files_dir .$doc_name))) {
-              if(isset($name)) {
-            	addWarning($name,'img_loading_problem_copy');
-              }
+            if (!copy ($_SHOP->files_dir .$old_img, $_SHOP->files_dir .$doc_name)) {
+              addWarning($name,'img_loading_problem_copy');
             } else {
               @chmod($_SHOP->files_dir . $doc_name, $_SHOP->file_mode);
               $this->pm_image = $doc_name;
