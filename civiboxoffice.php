@@ -372,7 +372,7 @@ function civiboxoffice_civicrm_pre( $op, $objectName, $id, &$params ) {
 function civiboxoffice_civicrm_post( $op, $objectName, $id, &$params ) {
     // on event create or edit, check submitted values for ft_category_id field
 	if (($objectName == 'Event') && ($op == 'create' || $op == 'edit') && 
-			isset($_POST['ft_category_id']) && ($_POST['ft_category_id'] !== 0)) {
+			isset($_POST['ft_category_id']) && ($_POST['ft_category_id'] != 0)) {
 		ft_security();
 		$ft_category_id = $_POST['ft_category_id'];
 		require_once('fusionticket/includes/classes/class.router.php');
