@@ -196,9 +196,11 @@ function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 			$seatarr = Array();
 
 			foreach ($seats as $seatid => $seat) {
-				$seatarr[] = Array( 'seat_nr' => $seat->seat_nr,
-				'seat_row_nr' => $seat->seat_row_nr,
-				'pmz_name' => $seat->pmz_name );
+				if ($seat->seat_nr && $seat->seat_row_nr) {
+				    $seatarr[] = Array( 'seat_nr' => $seat->seat_nr,
+				    'seat_row_nr' => $seat->seat_row_nr,
+				    'pmz_name' => $seat->pmz_name );
+				}
 			}
 			$form->assign('seatInfo', $seatarr);
 		}
