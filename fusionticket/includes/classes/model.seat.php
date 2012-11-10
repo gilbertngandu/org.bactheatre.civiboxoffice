@@ -50,7 +50,7 @@ class Seat  Extends Model {
   protected $_columns   = array('#seat_id', '*seat_event_id', '*seat_category_id', '#seat_user_id', '#seat_order_id',
                                 '#seat_row_nr', '#seat_zone_id', '#seat_pmp_id', 'seat_nr', 'seat_ts', 'seat_sid',
                                 'seat_price', 'seat_discount', '#seat_discount_id', 'seat_code', '*seat_status',
-                                '#seat_old_order_id', 'seat_old_status');
+                                '#seat_old_order_id', 'seat_old_status', 'seat_zone_name');
 
 
   function ticket ($event_id,$category_id,$seat_id, $user_id, $sid, $cat_price, $discount=null) {
@@ -93,17 +93,45 @@ class Seat  Extends Model {
     return $pmp;
   }
 
+  function loadAllSid ($sid){
+  	global $_SHOP;
+  
+  	$query="SELECT Seat.seat_id, Seat.seat_user_id, Seat.seat_order_id, Seat.seat_ts, 
+  			       Seat.seat_sid, Seat.seat_price, Seat.seat_discount_id, Seat.seat_code, 
+  			       Seat.seat_status, Seat.seat_row_nr, Seat.seat_nr, PlaceMapZone.pmz_name, Seat.seat_pmp_id
+            from Seat
+  			LEFT OUTER JOIN PlaceMapZone
+  			ON Seat.seat_zone_id = PlaceMapZone.pmz_id
+            where Seat.seat_sid="._esc($sid) . "AND Seat.seat_status='res'";
+  	$pmp = Array();
+  	if($res=ShopDB::query($query)){
+  		while($rec=shopDB::fetch_assoc($res)){
+  			$seat = new Seat;
+  			$seat->_columns   = array('#seat_id', '#seat_user_id', '#seat_order_id', 'seat_ts', 'seat_sid',
+  					'seat_price', '#seat_discount_id', 'seat_code', '*seat_status', '#seat_row_nr', 'seat_nr', 'seat_zone_name', 'seat_pmp_id');
+  			$seat->_fill($rec);
+  			$pmp[$seat->seat_id]=$seat;
+  		}
+  	}
+  	return $pmp;
+  }
+  
+  
   public function loadAllOrder($order_id){
     global $_SHOP;
 
-    $query="SELECT seat_id, seat_user_id, seat_order_id, seat_ts, seat_sid, seat_price, seat_discount_id, seat_code, seat_status
+    $query="SELECT Seat.seat_id, Seat.seat_user_id, Seat.seat_order_id, Seat.seat_category_id, Seat.seat_event_id,
+    		       Seat.seat_ts, Seat.seat_sid, Seat.seat_price, Seat.seat_discount_id, Seat.seat_code, 
+  			       Seat.seat_status, Seat.seat_row_nr, Seat.seat_nr, PlaceMapZone.pmz_name, Seat.seat_pmp_id
             FROM Seat
+    		LEFT OUTER JOIN PlaceMapZone
+  			ON Seat.seat_zone_id = PlaceMapZone.pmz_id
             WHERE seat_order_id="._esc($order_id);
     if($res=ShopDB::query($query)){
       while($rec=shopDB::fetch_assoc($res)){
         $seat = new Seat;
-        $seat->_columns   = array('#seat_id', '#seat_user_id', '#seat_order_id', 'seat_ts', 'seat_sid',
-                              'seat_price', '#seat_discount_id', 'seat_code', '*seat_status');
+  		$seat->_columns = array('#seat_id', '#seat_user_id', '#seat_order_id', '#seat_category_id', '#seat_event_id', 'seat_ts', 'seat_sid',
+  			'seat_price', '#seat_discount_id', 'seat_code', '*seat_status', '#seat_row_nr', 'seat_nr', 'seat_zone_name', 'seat_pmp_id');
         $seat->_fill($rec);
         $pmp[$seat->seat_id]=$seat;
       }
@@ -319,6 +347,8 @@ class Seat  Extends Model {
   //$seats = array(array('seat_id'=>,'event_id'=>,category_id=>,pmp_id=>))
   function cancel($seats, $user_id, $nocommit=FALSE){
     global $_SHOP;
+    $category_stat = Array();
+    $event_stat = Array();
     if(!ShopDB::begin('cancel seats')){
       return FALSE;
     }
@@ -346,8 +376,18 @@ class Seat  Extends Model {
            return FALSE;
         }
       }
-      $event_stat[$seat['event_id']]++;
-      $category_stat[$seat['category_id']]++;
+      if (array_key_exists($seat['event_id'], $event_stat)) {
+      	$event_stat[$seat['event_id']]++;
+      }
+      else {
+      	$event_stat[$seat['event_id']] = 1;
+      }
+      if (array_key_exists($seat['category_id'], $category_stat)) {
+      	$category_stat[$seat['category_id']]++;
+      }
+      else {
+      	$category_stat[$seat['category_id']] = 1;
+      }
       $pmp_check[$seat['pmp_id']]=1;
     }
 

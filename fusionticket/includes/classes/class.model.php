@@ -379,7 +379,7 @@ class Model {
 
   function fillTime(&$data, $name) { // Lxsparks, edited to allow for midday and midnight times in 12 and 24 hour clocks
     global $_SHOP;
-		if ($data[$name.'-h'] === "" && $data[$name.'-m'] === "" ) {
+		if ((isset($data[$name.'-h']) && $data[$name.'-h'] === "") && (isset($data[$name.'-m']) && ($data[$name.'-m'] === "" ))) {
 			$h = NULL;
 			$m= NULL;
 			$data[$name] = NULL;
