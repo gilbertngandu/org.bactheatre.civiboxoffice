@@ -50,33 +50,6 @@ function civiboxoffice_civicrm_disable() {
   return _civiboxoffice_civix_civicrm_disable();
 }
 
-function civiboxoffice_civicrm_tokens(&$tokens) {
-  $tokens['event'] = array(
-    'event.seats-html' => ts("The seats the contact selected for this event in HTML"),
-    'event.seats-text' => ts("The seats the contact selected for this event in text"),
-  );
-}
-
-function civiboxoffice_civicrm_tokenValues(&$values, $cids, $job = null, $tokens = array(), $context = null)
-{
-  if ($context != 'CRM_Core_BAO_MessageTemplate') {
-    return;
-  }
-  $smarty = CRM_Core_Smarty::singleton();
-  dd(civiboxoffice_mail_template_vars(), "mail_template_vars");
-  foreach (civiboxoffice_mail_template_vars() as $name => $value) {
-    $smarty->assign($name, $value);
-  }
-  $html_template_path = implode(DIRECTORY_SEPARATOR, array(civiboxoffice_template_partials_dir(), 'event-seats-html.tpl'));
-  $html_event_seats = $smarty->fetch($html_template_path);
-  $text_template_path = implode(DIRECTORY_SEPARATOR, array(civiboxoffice_template_partials_dir(), 'event-seats-text.tpl'));
-  $text_event_seats = $smarty->fetch($text_template_path);
-  foreach ($cids as $index => $cid) {
-    $values[$cid]['event.seats-html'] = $html_event_seats;
-    $values[$cid]['event.seats-text'] = $text_event_seats;
-  }
-}
-
 /**
  * Implementation of hook_civicrm_upgrade
  *
@@ -205,7 +178,6 @@ function civiboxoffice_civicrm_buildForm( $formName, &$form ) {
 	  'pmz_name' => $seat->pmz_name );
       }
       $form->assign('seatInfo', $seatarr);
-      civiboxoffice_mail_template_vars('seat_info', $seatarr);
     }
   }
 
@@ -464,23 +436,3 @@ function civiboxoffice_civicrm_post( $op, $objectName, $id, &$params ) {
       $_POST = $civi_POST;
     }
 }		
-
-function civiboxoffice_mail_template_vars($var_name = NULL, $var_value = NULL) {
-  static $civiboxoffice_mail_template_vars = array();
-  if ($var_name != NULL) {
-    $civiboxoffice_mail_template_vars[$var_name] = $var_value;
-  }
-  return $civiboxoffice_mail_template_vars;
-}
-    
-function civiboxoffice_root_dir() {
-  return dirname(__FILE__);
-}
-
-function civiboxoffice_template_dir() {
-  return implode('/', array(civiboxoffice_root_dir(), 'templates'));
-}
-
-function civiboxoffice_template_partials_dir() {
-  return implode('/', array(civiboxoffice_template_dir(), 'partials'));
-}
