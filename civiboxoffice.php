@@ -110,7 +110,6 @@ function civiboxoffice_civicrm_navigationMenu(&$params) {
 
 function civiboxoffice_civicrm_buildForm($formName, &$form) {
   $hook_name = "civiboxoffice_civicrm_buildForm_$formName";
-  dd($hook_name, "Foo");
   if (function_exists($hook_name)) {
     $hook_name($formName, $form);
   }
