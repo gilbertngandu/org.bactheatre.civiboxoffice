@@ -29,5 +29,29 @@
     }
   });
   {/literal}
+</script>
+{/if}
+
+{if $subscription_events}
+  <table style="display: none;">
+    <tr id="allowed-subscription-area">
+      <td class="label">
+	<label for="allowed_subscription_ids">
+	  Allowed Subscriptions
+	</label>
+      </td>
+      <td>
+	<select id="allowed_subscription_ids" name="allowed_subscription_ids" multiple="true">
+	  {foreach from=$subscription_events item=subscription_event}
+	    <option value="{$subscription_event->id}">
+	      {$subscription_event->title}
+	    </option>
+	  {/foreach}
+	</select>
+      </td>
+    </tr>
+  </table>
+  <script>
+    cj(document).trigger('form-loaded');
   </script>
 {/if}

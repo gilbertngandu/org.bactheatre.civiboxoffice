@@ -113,6 +113,9 @@ function civiboxoffice_civicrm_buildForm($formName, &$form) {
   if (function_exists($hook_name)) {
     $hook_name($formName, $form);
   }
+  if (preg_match('/CRM_Event_Form_ManageEvent.*/', $formName)) {
+    CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/manage_event.js');
+  }
 }
 
 function civiboxoffice_build_seat_selector($formName, &$form) {
@@ -287,6 +290,16 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
     }
     $form->assign('ft_categories', $ft_categories);
   }
+
+  $event_bao = new CRM_Event_BAO_Event();
+  $event_bao->event_type_id = 8;
+  $event_bao->is_active = TRUE;
+  $subscription_events = array();
+  $event_bao->find();
+  while ($event_bao->fetch()) {
+    $subscription_events[] = clone($event_bao);
+  }
+  $form->assign('subscription_events', $subscription_events);
 }
 
 function civiboxoffice_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
@@ -334,7 +347,7 @@ function civiboxoffice_validate_seats($formName, &$fields, &$files, &$form, &$er
 function civiboxoffice_civicrm_postProcess($formName, &$form) {
   $hook_name = "civiboxoffice_civicrm_postProcess_$formName";
   if (function_exists($hook_name)) {
-    $hook_name($formName, &$form);
+    $hook_name($formName, $form);
   }
 }
 
