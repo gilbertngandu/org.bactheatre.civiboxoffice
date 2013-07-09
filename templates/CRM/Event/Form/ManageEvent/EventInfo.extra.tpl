@@ -33,7 +33,7 @@
 {/if}
 
 {if $subscription_events}
-  <table style="display: none;">
+  <table id="civiboxoffice-staging-area" style="display: none;">
     <tr id="allowed-subscription-area">
       <td class="label">
 	<label for="allowed_subscription_ids">
