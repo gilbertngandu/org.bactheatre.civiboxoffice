@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="iso-8859-1" ?> 
+ 
+<table> 
+  <base>CRM/BoxOffice</base> 
+  <class>PriceSetAssociation</class> 
+  <name>civiboxoffice_price_set_associations</name> 
+  <add>4.2</add> 
+  <log>true</log>
+  <field> 
+      <name>id</name> 
+      <title>Price Set Association ID</title>
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>Price Set Association ID</comment> 
+      <add>4.2</add> 
+  </field> 
+  <primaryKey> 
+       <name>id</name> 
+       <autoincrement>true</autoincrement> 
+  </primaryKey> 
+  <field> 
+      <name>event_id</name> 
+      <title>Event ID</title>  
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>The event ID for the allowed event that will be used by a subscription.</comment> 
+      <add>4.2</add> 
+  </field>
+  <foreignKey> 
+       <name>event_id</name> 
+       <table>civicrm_event</table> 
+       <key>id</key> 
+       <onDelete>CASCADE</onDelete>
+  </foreignKey>
+  <field> 
+      <name>subscription_price_field_id</name> 
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>The price field ID in the subscription event that will get mapped to a price field in the allowed event.</comment> 
+      <add>4.2</add> 
+  </field>
+  <foreignKey> 
+       <name>sub_price_field_id</name> 
+       <table>civicrm_price_field</table> 
+       <key>id</key> 
+       <add>4.2</add> 
+       <onDelete>CASCADE</onDelete>
+     </foreignKey>
+  <field> 
+      <name>allowed_event_price_field_id</name> 
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>The price field ID in the allowed event that will get mapped from a price field from the subscription event.</comment>
+      <add>4.2</add> 
+  </field>
+  <foreignKey> 
+       <name>alwd_event_price_field_id</name> 
+       <table>civicrm_price_field</table> 
+       <key>id</key> 
+       <add>4.2</add> 
+       <onDelete>CASCADE</onDelete>
+  </foreignKey>
+  <index>
+    <name>UI_price_set_associations</name>
+    <unique>true</unique>
+    <fieldName>event_id</fieldName>
+    <fieldName>subscription_price_field_id</fieldName>
+    <fieldName>allowed_event_price_field_id</fieldName>
+    <add>4.2</add>
+  </index>
+</table>

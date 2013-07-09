@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="iso-8859-1" ?> 
+ 
+<table> 
+  <base>CRM/BoxOffice</base> 
+  <class>SubscriptionAllowance</class> 
+  <name>civiboxoffice_subscription_allowances</name> 
+  <add>4.2</add> 
+  <log>true</log>
+  <field> 
+      <name>id</name> 
+      <title>Subscription Allowance ID</title>
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>Subscription Allowance ID</comment> 
+      <add>4.2</add> 
+  </field> 
+  <primaryKey> 
+       <name>id</name> 
+       <autoincrement>true</autoincrement> 
+  </primaryKey> 
+  <field> 
+      <name>subscription_event_id</name> 
+      <title>Subscription Event ID</title>  
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>The event ID for the subscription event that will allow the allowed event.</comment> 
+      <add>4.2</add> 
+  </field>
+  <foreignKey> 
+       <name>subscription_event_id</name> 
+       <table>civicrm_event</table> 
+       <key>id</key> 
+       <onDelete>CASCADE</onDelete>
+  </foreignKey>
+  <field> 
+      <name>allowed_event_id</name> 
+      <type>int unsigned</type> 
+      <required>true</required> 
+      <comment>The event ID for the event allowed by the subscription event.</comment> 
+      <add>4.2</add> 
+  </field>
+  <foreignKey> 
+       <name>allowed_event_id</name> 
+       <table>civicrm_event</table> 
+       <key>id</key> 
+       <add>4.2</add> 
+       <onDelete>CASCADE</onDelete>
+  </foreignKey>
+  <index>
+    <name>UI_subscription_allowed_event</name>
+    <unique>true</unique>
+    <fieldName>subscription_event_id</fieldName>
+    <fieldName>allowed_event_id</fieldName>
+    <add>4.2</add>
+  </index>
+</table>

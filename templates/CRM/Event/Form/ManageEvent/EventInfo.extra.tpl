@@ -41,9 +41,9 @@
 	</label>
       </td>
       <td>
-	<select id="allowed_subscription_ids" name="allowed_subscription_ids" multiple="true">
+	<select id="allowed_subscription_ids" name="allowed_subscription_ids[]" multiple="true">
 	  {foreach from=$subscription_events item=subscription_event}
-	    <option value="{$subscription_event->id}">
+	  <option value="{$subscription_event->id}" {if $subscription_event->civiboxoffice_allowed} selected="true"{/if}>
 	      {$subscription_event->title}
 	    </option>
 	  {/foreach}

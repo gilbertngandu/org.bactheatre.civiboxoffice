@@ -246,15 +246,16 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
   // add seatmap selector to event configuration page
   ft_security();
   require_once('fusionticket/includes/classes/class.router.php');
+  $event_id = $form->getVar('_entityId');
 
   // check if this event already has a seatmap / category configured
   $query = 'SELECT Ort.ort_name, PlaceMap2.pm_name, Category.category_name
     FROM Category
     LEFT JOIN PlaceMap2 ON Category.category_pm_id = PlaceMap2.pm_id
     LEFT JOIN Ort ON PlaceMap2.pm_ort_id = Ort.ort_id';
-  $query .= ' WHERE Category.category_data LIKE "%civicrm_event_id=' . $form->getVar('_entityId') . '%"';
+  $query .= ' WHERE Category.category_data LIKE "%civicrm_event_id=' . $event_id . '%"';
 
-  if (($res=ShopDB::query($query)) && $form->getVar('_entityId')) {
+  if (($res=ShopDB::query($query)) && $event_id) {
 
     // only supporting one category per event for now
     // so $res should be only one row
@@ -291,13 +292,26 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
     $form->assign('ft_categories', $ft_categories);
   }
 
+  if ($event_id == NULL)
+  {
+    $subscription_allowances = array();
+  }
+  else
+  {
+    $subscription_allowances = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event_id);
+  }
   $event_bao = new CRM_Event_BAO_Event();
   $event_bao->event_type_id = 8;
   $event_bao->is_active = TRUE;
   $subscription_events = array();
   $event_bao->find();
   while ($event_bao->fetch()) {
-    $subscription_events[] = clone($event_bao);
+    $subscription_event = clone($event_bao);
+    if (CRM_BoxOffice_BAO_SubscriptionAllowance::subscription_allowances_has_subscription_event_id($subscription_allowances, $subscription_event->id))
+    {
+      $subscription_event->civiboxoffice_allowed = true;
+    }
+    $subscription_events[] = $subscription_event;
   }
   $form->assign('subscription_events', $subscription_events);
 }
@@ -449,15 +463,22 @@ function civiboxoffice_civicrm_post($op, $objectName, $id, &$params) {
   }
 }
 
-function civiboxoffice_civicrm_Event_create($ob, $objectName, $id, &$params) {
+function civiboxoffice_civicrm_post_Event_create($ob, $objectName, $id, &$params) {
   civiboxoffice_create_fusionticket_event($id, $params);
 }
 
-function civiboxoffice_civicrm_Event_edit($ob, $objectName, $id, &$params) {
+function civiboxoffice_civicrm_post_Event_edit($ob, $objectName, $id, &$params) {
   civiboxoffice_create_fusionticket_event($id, $params);
 }
 
 function civiboxoffice_create_fusionticket_event($id, &$params) {
+  if (isset($_POST['allowed_subscription_ids'])) {
+    $allowed_subscription_ids = $_POST['allowed_subscription_ids'];
+  } else {
+    $allowed_subscription_ids = array();
+  }
+  CRM_BoxOffice_BAO_SubscriptionAllowance::update_subscription_events_for_allowed_event_id($id, $allowed_subscription_ids);
+
   // on event create or edit, check submitted values for ft_category_id field
   if (isset($_POST['ft_category_id']) && ($_POST['ft_category_id'] != 0)) {
     ft_security();
