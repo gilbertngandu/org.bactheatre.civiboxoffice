@@ -94,7 +94,7 @@ function civiboxoffice_civicrm_navigationMenu(&$params) {
 	  'attributes' => array (
 	    'label'      => 'Manage Seat Maps',
 	    'name'       => 'Manage Seat Maps',
-	    'url'        => CRM_Core_Resources::singleton()->getUrl('org.bactheatre.civiboxoffice', 'fusionticket/admin'),
+	    'url'        => CRM_Core_Resources::singleton()->getUrl(CBO_EXTENSION_NAME, 'fusionticket/admin'),
 	    'permission' => 'access CiviEvent,administer CiviCRM',
 	    'operator'   => 'AND',
 	    'separator'  => 1,
@@ -178,8 +178,26 @@ function civiboxoffice_build_seat_selector($formName, &$form) {
   }
 }
 
+function civiboxoffice_add_subscription($form) {
+  $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
+  if (!$snippet) {
+    return;
+  }
+  $event_id = $form->getVar('_eventId');
+  $subscription_allowance = new CRM_BoxOffice_BAO_SubscriptionAllowance();
+  $subscription_allowance->allowed_event_id = $event_id;
+  if ($subscription_allowance->find(TRUE))
+  {
+    $form->assign('event_id', $event_id);
+    $form->assign('add_subscription_section', TRUE);
+    $civiboxoffice_subscription_lookup_url = CRM_Core_Resources::singleton()->getUrl(CBO_EXTENSION_NAME, 'civiboxoffice/subscription_lookup');
+    $form->assign('civiboxoffice_subscription_lookup_url', $civiboxoffice_subscription_lookup_url);
+  }
+}
+
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Register($formName, &$form) {
   civiboxoffice_build_seat_selector($formName, $form);
+  civiboxoffice_add_subscription($form);
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($formName, &$form) {

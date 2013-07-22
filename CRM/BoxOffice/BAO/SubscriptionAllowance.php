@@ -15,6 +15,57 @@ class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_Subscrip
     return $subscription_allowances;
   }
 
+  public static function find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id)
+  {
+    $counted_statuses = CRM_Event_PseudoConstant::participantStatus(NULL, 'is_counted = 1');
+    $counted_status_ids = array_keys($counted_statuses);
+    $params = array
+    (
+      1 => array(implode(", ", $counted_status_ids), 'String'),
+      2 => array($allowed_event_id, 'Integer'),
+      3 => array($subscription_email_address, 'String'),
+    );
+    $sql = <<<EOS
+      SELECT
+	civicrm_participant.id AS subscription_participant_id
+      FROM
+	civiboxoffice_subscription_allowances
+      JOIN
+	civicrm_participant ON (civiboxoffice_subscription_allowances.subscription_event_id = civicrm_participant.event_id)
+      JOIN
+	civicrm_email ON (civicrm_participant.contact_id = civicrm_email.contact_id)
+      WHERE
+	civicrm_participant.status_id IN (%1)
+      AND
+	civiboxoffice_subscription_allowances.allowed_event_id = %2
+      AND
+	civicrm_email.email = %3
+EOS;
+    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    $dao->fetch();
+    if ($dao->N == 1) 
+    {
+      $subscription_line_items = array();
+      $line_item = new CRM_Price_BAO_LineItem();
+      $line_item->entity_table = 'civicrm_participant';
+      $line_item->entity_id = $dao->subscription_participant_id;
+      $line_item->find(FALSE);
+      while ($line_item->fetch())
+      {
+	$subscription_line_items[] = clone($line_item);
+      }
+      return array($subscription_line_items, NULL);
+    }
+    elseif ($subscription_allowance->N > 1)
+    {
+      return array(NULL, "Found more than one matching subscription. Please call BACT for assistance.");
+    }
+    else
+    {
+      return array(NULL, "Unable to find any subscriptions for '$subscription_email_address'");
+    }
+  }
+
   public static function subscription_allowances_has_subscription_event_id($subscription_allowances, $subscription_event_id)
   {
     foreach ($subscription_allowances as $subscription_allowance)

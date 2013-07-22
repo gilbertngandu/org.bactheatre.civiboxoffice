@@ -1,0 +1,8 @@
+<menu>
+  <item>
+    <path>civicrm/civiboxoffice/subscription_lookup</path>
+    <page_callback>CRM_BoxOffice_Page_SubscriptionLookup::lookup</page_callback>
+    <access_callback>1</access_callback>
+    <is_public>true</is_public>
+  </item>
+</menu>

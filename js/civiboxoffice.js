@@ -82,7 +82,74 @@ function totalTickets() {
   return totaltickets;
 }
 
+function subscription_add_error(message) {
+  var message_html = "<div class=\"red\">\n" + message + "\n</div>\n";
+  cj('#subscription-messages').append(message_html);
+}
+
+function subscription_add_message(message) {
+  var message_html = "<div>\n" + message + "\n</div>\n";
+  cj('#subscription-messages').append(message_html);
+}
+
+function subscription_clear_error_messages() {
+  cj('#subscription-messages').html('');
+}
+
+function subscription_ajax_error(jq_xhr, error_type, exception) {
+  subscription_add_error('There was an error requesting subscription information: ' + exception);
+}
+
+function subscription_update_fields(data, text_status, jq_xhr) {
+  if (data == null) {
+    subscription_add_error("There was an error looking up your subscription information.");
+    return;
+  }
+  if (data['error']) {
+    subscription_add_error(data['error_message']);
+  } else {
+    var quantity_for_price_field_ids = data['quantity_for_price_field_ids'];
+    cj.each(quantity_for_price_field_ids, function(key, value) {
+      $('#price_' + key).val(value);
+    });
+    price_fields = cj('#priceset input');
+    price_fields.prop('readonly', true);
+    price_fields.css('background-color', 'rgb(235, 235, 228)');
+    subscription_add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below.");
+  }
+}
+
+function setup_subscription() {
+  if (cj("#subscription-section-staging-area").length == 0) {
+    return;
+  }
+  cj('#subscription-section').insertBefore('#priceset');
+  cj('#subscription_email_address').on('blur', function() {
+    if ($(this).val().trim() == '') {
+      return;
+    }
+    subscription_clear_error_messages();
+    data = {
+      'allowed_event_id': event_id,
+      'subscription_email_address': $(this).val(),
+    };
+    options = {
+      'data': data,
+      'dataType': 'json',
+      'error': subscription_ajax_error,
+      'success': subscription_update_fields,
+      'type': 'GET',
+      'url': '/civicrm/civiboxoffice/subscription_lookup',
+    };
+    cj.ajax(options);
+  });
+}
+
 cj(document).ready(function() {
+  setup_subscription();
+  if (cj('#seatmapdefault').length == 0) {
+    return;
+  }
   if (cj('div#seatmap').length == 0) {
     cj('fieldset#priceset').after('<div id="seatmap"></div>');
   }
