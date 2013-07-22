@@ -108,13 +108,31 @@ function subscription_update_fields(data, text_status, jq_xhr) {
   if (data['error']) {
     subscription_add_error(data['error_message']);
   } else {
-    var quantity_for_price_field_ids = data['quantity_for_price_field_ids'];
-    cj.each(quantity_for_price_field_ids, function(key, value) {
-      $('#price_' + key).val(value);
+    var subscription_price_fields = data['subscription_price_fields'];
+    cj.each(subscription_price_fields, function() {
+      price_field = cj('#price_' + this['id']);
+      if (this['quantity'] != null) {
+	price_field.val(this['quantity']);
+      } else {
+	price_field.val(0);
+      }
+      price_field.prop('readonly', true);
+      price_field.css('background-color', 'rgb(235, 235, 228)');
+      eval( 'var option = ' + price_field.attr('price') );
+      element_index = option[0];
+      price[element_index] = 0;
+      price_field.attr('price', '[' + element_index + ',"0||"]');
+      service_fee_field = cj('input[name=price_32]');
+      eval( 'var option = ' + service_fee_field.attr('price') );
+      element_index = option[0];
+      price[element_index] = 0;
+      service_fee_field.attr('price', '["' + element_index + '","0||"]');
     });
-    price_fields = cj('#priceset input');
-    price_fields.prop('readonly', true);
-    price_fields.css('background-color', 'rgb(235, 235, 228)');
+    totalfee -= 2;
+    display(totalfee);
+    if (totalfee <= 0) {
+      cj('#payment_information').hide();
+    }
     subscription_add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below.");
   }
 }

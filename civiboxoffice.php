@@ -178,15 +178,37 @@ function civiboxoffice_build_seat_selector($formName, &$form) {
   }
 }
 
-function civiboxoffice_add_subscription($form) {
-  $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
-  if (!$snippet) {
-    return;
+function civiboxoffice_event_allows_subscriptions($event_id) {
+  return CRM_BoxOffice_BAO_SubscriptionAllowance::subscription_allowances_exist_for_allowed_event_id($event_id);
+}
+
+function civiboxoffice_subscription_covers_all_costs($form) {
+  return TRUE;
+}
+
+function civiboxoffice_disable_payment_fields($form) {
+  foreach ($form->_paymentFields as $payment_field_name => &$payment_field) {
+    if ($payment_field['is_required']) {
+      $payment_field['is_required'] = FALSE;
+    }
   }
+}
+
+function civiboxoffice_add_subscription($form) {
   $event_id = $form->getVar('_eventId');
-  $subscription_allowance = new CRM_BoxOffice_BAO_SubscriptionAllowance();
-  $subscription_allowance->allowed_event_id = $event_id;
-  if ($subscription_allowance->find(TRUE))
+  if ($_POST) {
+    if (civiboxoffice_event_allows_subscriptions($event_id) &&
+        civiboxoffice_subscription_covers_all_costs($form)) 
+    {
+      civiboxoffice_disable_payment_fields($form);
+    }
+  } else {
+    $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
+    if (!$snippet) {
+      return;
+    }
+  }
+  if (civiboxoffice_event_allows_subscriptions($event_id))
   {
     $form->assign('event_id', $event_id);
     $form->assign('add_subscription_section', TRUE);
@@ -217,6 +239,7 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
     }
     $form->assign('seatInfo', $seatarr);
   }
+  $form->_values['event']['is_monetary'] = FALSE;
 }
 
 function civiboxoffice_assign_seat_information($formName, &$form)

@@ -66,6 +66,17 @@ EOS;
     }
   }
 
+  public static function subscription_allowances_exist_for_allowed_event_id($allowed_event_id)
+  {
+    $subscription_allowance = new CRM_BoxOffice_BAO_SubscriptionAllowance();
+    $subscription_allowance->allowed_event_id = $allowed_event_id;
+    if ($subscription_allowance->find(TRUE))
+    {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
   public static function subscription_allowances_has_subscription_event_id($subscription_allowances, $subscription_event_id)
   {
     foreach ($subscription_allowances as $subscription_allowance)

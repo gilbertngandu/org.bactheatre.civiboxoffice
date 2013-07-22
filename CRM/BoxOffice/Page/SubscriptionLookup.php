@@ -16,32 +16,51 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
       }
       else
       {
+	$associated_price_objects = array();
+	foreach ($price_set_associations as $price_set_association)
+	{
+	  $associated_price_objects[] = array($price_set_association, NULL);
+	}
 	foreach ($subscription_line_items as $subscription_line_item) 
 	{
-	  $assocated_line_item = NULL;
-	  foreach ($price_set_associations as $price_set_association)
+	  $found_line_item = FALSE;
+	  foreach ($associated_price_objects as &$associated_price_pair)
 	  {
+	    $price_set_association = $associated_price_pair[0];
 	    if ($subscription_line_item->price_field_id == $price_set_association->subscription_price_field_id)
 	    {
-	      $associated_line_item = $subscription_line_item;
+	      $associated_price_pair[1] = $subscription_line_item;
+	      $found_line_item = TRUE;
+	      break;
 	    }
 	  }
-	  if ($associated_line_item == NULL)
+	  if (!$found_line_item) 
 	  {
-	    $error_messages[] = "Unable to find a price field in the subscription event with the ID {$price_set_association->subscription_price_field_id}.";
-	  }
-	  else
-	  {
-	    $quantity_for_price_field_ids[$price_set_association->allowed_event_price_field_id] = $associated_line_item->qty;
+	    $error_messages[] = "Couldn't find a price field in this event that has been associated with the subscription event price field with ID {$subscription_line_item->price_field_id}.";
 	  }
 	}
-	if (empty($quantity_for_price_field_ids)) 
+	$subscription_price_fields = array();
+	foreach	($associated_price_objects as &$associated_price_pair)
+	{
+	  $price_set_association = $associated_price_pair[0];
+	  $subscription_line_item = $associated_price_pair[1];
+	  $subscription_price_field = array
+	  (
+	    'id' => $price_set_association->allowed_event_price_field_id,
+	  );
+	  if ($subscription_line_item != NULL)
+	  {
+	    $subscription_price_field['quantity'] = $subscription_line_item->qty;
+	  }
+	  $subscription_price_fields[] = $subscription_price_field;
+	}
+	if (empty($subscription_price_fields)) 
 	{
 	  $error_messages[] = "Couldn't find any matching price fields in the subscription event.";
 	}
 	if (empty($errors))
 	{
-	  $result['quantity_for_price_field_ids'] = $quantity_for_price_field_ids;
+	  $result['subscription_price_fields'] = $subscription_price_fields;
 	}
       }
     }
