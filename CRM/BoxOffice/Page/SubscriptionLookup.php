@@ -5,8 +5,20 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     $error_messages = array();
     $subscription_email_address = $_REQUEST['subscription_email_address'];
     $allowed_event_id = $_REQUEST['allowed_event_id'];
-    list($subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
-    if ($subscription_line_items != NULL)
+    $price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($allowed_event_id);
+    if (count($price_set_associations) == 0)
+    {
+      $error_messages[] = "It looks like this event wasn't configured correctly because I can't find any matching price fields for your subscription for this event.";
+    }
+    if (empty($error_messages))
+    {
+      list($subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
+    }
+    if ($subscription_line_items == NULL)
+    {
+      $error_messages[] = "No matching flex pass found for '$subscription_email_address'.";
+    }
+    else
     {
       $quantity_for_price_field_ids = array();
       $price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($allowed_event_id);
@@ -64,7 +76,6 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
 	}
       }
     }
-
     if (!empty($error_messages))
     {
       $result['error'] = TRUE;
