@@ -154,6 +154,11 @@ function setup_subscription() {
   }
   cj('#subscription-section').insertBefore('#priceset');
   cj('#subscription_email_address').on('blur', function() {
+    cj('#subscription_participant_id').val('');
+    cj('#payment_information').show();
+    price_fields = cj('#priceset input');
+    price_fields.prop('readonly', false);
+    price_fields.css('background-color', '');
     if ($(this).val().trim() == '') {
       return;
     }
