@@ -343,11 +343,15 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
   }
     
   if (($snippet == NULL && $form_event_id == NULL) || ($snippet && $component == 'event')) {
-    if ($form_event_id == NULL) {
+    $event_id = $form_event_id;
+    if ($event_id == NULL) {
+      $event_id = $form->_id;
+    }
+    if ($event_id == NULL) {
       $subscription_allowances = array();
     }
     else {
-      $subscription_allowances = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($form_event_id);
+      $subscription_allowances = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event_id);
     }
     $event = new CRM_Event_BAO_Event();
     $event->event_type_id = 8;
