@@ -1,10 +1,10 @@
 <?php
 
 class CRM_BoxOffice_Page_SubscriptionLookup {
-  static function check_subscription_uses($subscription_event_id)
+  static function check_subscription_uses($subscription_participant)
   {
-    $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_event_id($subscription_event_id);
-    $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_event_id);
+    $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_participant($subscription_participant);
+    $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_participant->event_id);
     $subscription_uses = count($participants);
     if ($subscription_uses >= $subscription_max_uses)
     {
@@ -92,7 +92,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     }
     if (empty($error_messages) && $subscription_participant != NULL)
     {
-      list($subscription_uses, $subscription_max_uses, $error_message) = static::check_subscription_uses($subscription_participant->event_id);
+      list($subscription_uses, $subscription_max_uses, $error_message) = static::check_subscription_uses($subscription_participant);
       if ($error_message != NULL)
       {
 	$error_messages[] = $error_message;
