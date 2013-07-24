@@ -239,7 +239,10 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
     }
     $form->assign('seatInfo', $seatarr);
   }
-  $form->_values['event']['is_monetary'] = FALSE;
+  $subscription_participant_id = $form->get('subscription_participant_id');
+  if ($subscription_participant_id != NULL) {
+    $form->_values['event']['is_monetary'] = FALSE;
+  }
 }
 
 function civiboxoffice_assign_seat_information($formName, &$form)
@@ -451,14 +454,22 @@ function civiboxoffice_reserve_seats($formName, &$form)
   }
 }
 
-function civiboxoffice_record_subscription_usage($allowed_event_id, $participant_id)
+function civiboxoffice_record_subscription_usage($subscription_participant_id, $allowed_event_id, $participant_id)
 {
   $subscription_participant = CRM_BoxOffice_BAO_SubscriptionAllowance::find_participant_by_participant_id_and_allowed_event_id($participant_id, $allowed_event_id);
   if ($subscription_participant == NULL)
   {
     throw new Exception("Unable to find subscription participant for allowed event $allowed_event_id and participant $participant_id.");
   }
+  if ($subscription_participant->id != $subscription_participant_id)
+  {
+    throw new Exception("Found subscription participant record {$subscription_participant->id}, but that ID does not match the ID from the form {$subscription_participant_id}.");
+  }
   CRM_BoxOffice_BAO_Participant::set_subscription_event_id($participant_id, $subscription_participant->event_id);
+}
+
+function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Register($formName, &$form) {
+  $form->set('subscription_participant_id', $_POST['subscription_participant_id']);
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Confirm($formName, &$form) {
@@ -467,9 +478,12 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Confirm($
   if (count($participant_ids) > 1) {
     CRM_Core_Error::fatal("The current civiboxoffice implementation cannot handle registrations with multiple participants.");
   }
-  $participant_id = $participant_ids[0];
-  $allowed_event_id = $form->_values['event']['id'];
-  civiboxoffice_record_subscription_usage($allowed_event_id, $participant_id);
+  $subscription_participant_id = $form->get('subscription_participant_id');
+  if ($subscription_participant_id != NULL) {
+    $participant_id = $participant_ids[0];
+    $allowed_event_id = $form->_values['event']['id'];
+    civiboxoffice_record_subscription_usage($subscription_participant_id, $allowed_event_id, $participant_id);
+  }
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName, &$form) {

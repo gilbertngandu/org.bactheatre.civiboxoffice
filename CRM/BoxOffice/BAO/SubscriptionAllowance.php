@@ -31,8 +31,7 @@ class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_Subscrip
     );
     $sql = <<<EOS
       SELECT
-	civicrm_participant.id AS subscription_participant_id,
-	civicrm_participant.event_id AS subscription_event_id
+	civicrm_participant.*
       FROM
 	civiboxoffice_subscription_allowances
       JOIN
@@ -46,21 +45,21 @@ class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_Subscrip
       AND
 	civicrm_email.email = %3
 EOS;
-    $dao = CRM_Core_DAO::executeQuery($sql, $params);
+    $dao = CRM_Core_DAO::executeQuery($sql, $params, 'CRM_Event_BAO_Participant');
     $dao->fetch();
     if ($dao->N == 1) 
     {
-      $subscription_event_id = $dao->subscription_event_id;
+      $subscription_event_id = $dao->event_id;
       $subscription_line_items = array();
       $line_item = new CRM_Price_BAO_LineItem();
       $line_item->entity_table = 'civicrm_participant';
-      $line_item->entity_id = $dao->subscription_participant_id;
+      $line_item->entity_id = $dao->id;
       $line_item->find(FALSE);
       while ($line_item->fetch())
       {
 	$subscription_line_items[] = clone($line_item);
       }
-      return array($subscription_event_id, $subscription_line_items, NULL);
+      return array($dao, $subscription_line_items, NULL);
     }
     elseif ($dao->N > 1)
     {

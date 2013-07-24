@@ -80,15 +80,19 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     }
     if (empty($error_messages))
     {
-      list($subscription_event_id, $subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
-      if ($subscription_event_id == NULL)
+      list($subscription_participant, $subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
+      if ($subscription_participant == NULL)
       {
 	$error_messages[] = $error_message;
       }
+      else
+      {
+	$result['subscription_participant_id'] = $subscription_participant->id;
+      }
     }
-    if (empty($error_messages) && $subscription_event_id != NULL)
+    if (empty($error_messages) && $subscription_participant != NULL)
     {
-      list($subscription_uses, $subscription_max_uses, $error_message) = static::check_subscription_uses($subscription_event_id);
+      list($subscription_uses, $subscription_max_uses, $error_message) = static::check_subscription_uses($subscription_participant->event_id);
       if ($error_message != NULL)
       {
 	$error_messages[] = $error_message;

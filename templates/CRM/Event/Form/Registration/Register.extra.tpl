@@ -18,6 +18,7 @@
 	</div>
 	<div class="content">
 	  <input type="text" id="subscription_email_address" name="subscription_email_address">
+	  <input type="hidden" id="subscription_participant_id" name="subscription_participant_id">
 	</div>
 	<div id="subscription-message-area" style="height: 2em;">
 	  <div id="subscription-messages" class="content">

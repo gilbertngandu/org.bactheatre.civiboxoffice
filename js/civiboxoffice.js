@@ -137,6 +137,7 @@ function subscription_update_fields(data, text_status, jq_xhr) {
     if (totalfee <= 0) {
       cj('#payment_information').hide();
     }
+    cj('#subscription_participant_id').val(data['subscription_participant_id']);
     var uses = data['subscription_uses'];
     var uses_info = uses + ' times';
     if (uses == 1)
