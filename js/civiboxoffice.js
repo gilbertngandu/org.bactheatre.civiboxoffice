@@ -108,6 +108,7 @@ function subscription_update_fields(data, text_status, jq_xhr) {
   if (data['error']) {
     subscription_add_error(data['error_message']);
   } else {
+    var deduct_amount = 0;
     var subscription_price_fields = data['subscription_price_fields'];
     cj.each(subscription_price_fields, function() {
       price_field = cj('#price_' + this['id']);
@@ -123,17 +124,26 @@ function subscription_update_fields(data, text_status, jq_xhr) {
       price[element_index] = 0;
       price_field.attr('price', '[' + element_index + ',"0||"]');
       service_fee_field = cj('input[name=price_32]');
-      eval( 'var option = ' + service_fee_field.attr('price') );
-      element_index = option[0];
-      price[element_index] = 0;
-      service_fee_field.attr('price', '["' + element_index + '","0||"]');
+      if (service_fee_field.length > 0) {
+      	eval( 'var option = ' + service_fee_field.attr('price') );
+      	element_index = option[0];
+      	price[element_index] = 0;
+      	service_fee_field.attr('price', '["' + element_index + '","0||"]');
+        deduct_amount += 2;
+      }
     });
-    totalfee -= 2;
+    totalfee -= deduct_amount;
     display(totalfee);
     if (totalfee <= 0) {
       cj('#payment_information').hide();
     }
-    subscription_add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below.");
+    var uses = data['subscription_uses'];
+    var uses_info = uses + ' times';
+    if (uses == 1)
+    {
+      uses_info = uses + ' time';
+    }
+    subscription_add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below. You have used your flex pass " + uses_info + ' out of ' + data['subscription_max_uses'] + ' maximum. This purchase will bring your usage to ' + (uses + 1) + '.');
   }
 }
 

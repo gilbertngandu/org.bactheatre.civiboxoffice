@@ -2,17 +2,30 @@
 
 class CRM_BoxOffice_Page_SubscriptionLookup {
   static function lookup() {
+    $result = array();
     $error_messages = array();
     $subscription_email_address = $_REQUEST['subscription_email_address'];
     $allowed_event_id = $_REQUEST['allowed_event_id'];
-    list($subscription_event_id, $subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
-    dd($subscription_event_id, 'Foo');
-    if ($subscription_event_id != NULL)
+    $price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($allowed_event_id);
+    if (count($price_set_associations) == 0)
+    {
+      $error_messages[] = "It looks like this event wasn't configured correctly because I can't find any matching price fields for your subscription for this event.";
+    }
+    if (empty($error_messages))
+    {
+      list($subscription_event_id, $subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
+      if ($subscription_event_id == NULL)
+      {
+	$error_messages[] = $error_message;
+      }
+    }
+    if (empty($error_messages) && $subscription_event_id != NULL)
     {
       $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_event_id($subscription_event_id);
-      dd($participants);
       $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_event_id);
       $uses = count($participants);
+      $result['subscription_uses'] = $uses;
+      $result['subscription_max_uses'] = $subscription_max_uses;
       if ($uses >= $subscription_max_uses)
       {
 	$usage_info = "$uses times";
@@ -26,59 +39,51 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     if (empty($error_messages) && $subscription_line_items != NULL)
     {
       $quantity_for_price_field_ids = array();
-      $price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($allowed_event_id);
-      if (count($price_set_associations) == 0)
+      $associated_price_objects = array();
+      foreach ($price_set_associations as $price_set_association)
       {
-	$error_messages[] = "It looks like this event wasn't configured correctly because I can't find any matching price fields for your subscription for this event.";
+	$associated_price_objects[] = array($price_set_association, NULL);
       }
-      else
+      foreach ($subscription_line_items as $subscription_line_item) 
       {
-	$associated_price_objects = array();
-	foreach ($price_set_associations as $price_set_association)
-	{
-	  $associated_price_objects[] = array($price_set_association, NULL);
-	}
-	foreach ($subscription_line_items as $subscription_line_item) 
-	{
-	  $found_line_item = FALSE;
-	  foreach ($associated_price_objects as &$associated_price_pair)
-	  {
-	    $price_set_association = $associated_price_pair[0];
-	    if ($subscription_line_item->price_field_id == $price_set_association->subscription_price_field_id)
-	    {
-	      $associated_price_pair[1] = $subscription_line_item;
-	      $found_line_item = TRUE;
-	      break;
-	    }
-	  }
-	  if (!$found_line_item) 
-	  {
-	    $error_messages[] = "Couldn't find a price field in this event that has been associated with the subscription event price field with ID {$subscription_line_item->price_field_id}.";
-	  }
-	}
-	$subscription_price_fields = array();
-	foreach	($associated_price_objects as &$associated_price_pair)
+	$found_line_item = FALSE;
+	foreach ($associated_price_objects as &$associated_price_pair)
 	{
 	  $price_set_association = $associated_price_pair[0];
-	  $subscription_line_item = $associated_price_pair[1];
-	  $subscription_price_field = array
-	  (
-	    'id' => $price_set_association->allowed_event_price_field_id,
-	  );
-	  if ($subscription_line_item != NULL)
+	  if ($subscription_line_item->price_field_id == $price_set_association->subscription_price_field_id)
 	  {
-	    $subscription_price_field['quantity'] = $subscription_line_item->qty;
+	    $associated_price_pair[1] = $subscription_line_item;
+	    $found_line_item = TRUE;
+	    break;
 	  }
-	  $subscription_price_fields[] = $subscription_price_field;
 	}
-	if (empty($subscription_price_fields)) 
+	if (!$found_line_item) 
 	{
-	  $error_messages[] = "Couldn't find any matching price fields in the subscription event.";
+	  $error_messages[] = "Couldn't find a price field in this event that has been associated with the subscription event price field with ID {$subscription_line_item->price_field_id}.";
 	}
-	if (empty($errors))
+      }
+      $subscription_price_fields = array();
+      foreach ($associated_price_objects as &$associated_price_pair)
+      {
+	$price_set_association = $associated_price_pair[0];
+	$subscription_line_item = $associated_price_pair[1];
+	$subscription_price_field = array
+	(
+	  'id' => $price_set_association->allowed_event_price_field_id,
+	);
+	if ($subscription_line_item != NULL)
 	{
-	  $result['subscription_price_fields'] = $subscription_price_fields;
+	  $subscription_price_field['quantity'] = $subscription_line_item->qty;
 	}
+	$subscription_price_fields[] = $subscription_price_field;
+      }
+      if (empty($subscription_price_fields)) 
+      {
+	$error_messages[] = "Couldn't find any matching price fields in the subscription event.";
+      }
+      if (empty($errors))
+      {
+	$result['subscription_price_fields'] = $subscription_price_fields;
       }
     }
     if (!empty($error_messages))
