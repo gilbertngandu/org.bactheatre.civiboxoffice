@@ -284,19 +284,21 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Participant($formName, &
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($formName, $form) {
+  $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
+  $component = CRM_Utils_Array::value('component', $_REQUEST);
+
   // add seatmap selector to event configuration page
   ft_security();
   require_once('fusionticket/includes/classes/class.router.php');
-  $event_id = $form->getVar('_entityId');
-
+  $form_event_id = $form->getVar('_entityId');
   // check if this event already has a seatmap / category configured
   $query = 'SELECT Ort.ort_name, PlaceMap2.pm_name, Category.category_name
     FROM Category
     LEFT JOIN PlaceMap2 ON Category.category_pm_id = PlaceMap2.pm_id
     LEFT JOIN Ort ON PlaceMap2.pm_ort_id = Ort.ort_id';
-  $query .= ' WHERE Category.category_data LIKE "%civicrm_event_id=' . $event_id . '%"';
+  $query .= ' WHERE Category.category_data LIKE "%civicrm_event_id=' . $form_event_id . '%"';
 
-  if (($res=ShopDB::query($query)) && $event_id) {
+  if (($res=ShopDB::query($query)) && $form_event_id) {
 
     // only supporting one category per event for now
     // so $res should be only one row
@@ -333,28 +335,40 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
     $form->assign('ft_categories', $ft_categories);
   }
 
-  if ($event_id == NULL)
-  {
-    $subscription_allowances = array();
+  if (isset($_POST['subscription_max_uses'])) {
+    $form->assign('subscription_max_uses', $_POST['subscription_max_uses']);
   }
-  else
-  {
-    $subscription_allowances = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event_id);
-  }
-  $event_bao = new CRM_Event_BAO_Event();
-  $event_bao->event_type_id = 8;
-  $event_bao->is_active = TRUE;
-  $subscription_events = array();
-  $event_bao->find();
-  while ($event_bao->fetch()) {
-    $subscription_event = clone($event_bao);
-    if (CRM_BoxOffice_BAO_SubscriptionAllowance::subscription_allowances_has_subscription_event_id($subscription_allowances, $subscription_event->id))
-    {
-      $subscription_event->civiboxoffice_allowed = true;
+    
+  if (($snippet == NULL && $form_event_id == NULL) || ($snippet && $component == 'event')) {
+    if ($form_event_id == NULL) {
+      $subscription_allowances = array();
     }
-    $subscription_events[] = $subscription_event;
-  }
-  $form->assign('subscription_events', $subscription_events);
+    else {
+      $subscription_allowances = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($form_event_id);
+    }
+    $event = new CRM_Event_BAO_Event();
+    $event->event_type_id = 8;
+    $event->is_active = TRUE;
+    $subscription_events = array();
+    $event->find();
+    while ($event->fetch()) {
+      $subscription_event = clone($event);
+      if (CRM_BoxOffice_BAO_SubscriptionAllowance::subscription_allowances_has_subscription_event_id($subscription_allowances, $subscription_event->id))
+      {
+	$subscription_event->civiboxoffice_allowed = true;
+      }
+      $subscription_events[] = $subscription_event;
+    }
+    $form->assign('subscription_events', $subscription_events);
+    $event_id = $form_event_id;
+    if ($event_id == NULL) {
+      $event_id = $form->_id;
+    }
+    if ($event_id != NULL)
+    {
+      $form->assign('subscription_max_uses', CRM_BoxOffice_BAO_Event::get_subscription_max_uses($event_id));
+    }
+  } 
 }
 
 function civiboxoffice_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
@@ -437,12 +451,31 @@ function civiboxoffice_reserve_seats($formName, &$form)
   }
 }
 
+function civiboxoffice_record_subscription_usage($allowed_event_id, $participant_id)
+{
+  $subscription_participant = CRM_BoxOffice_BAO_SubscriptionAllowance::find_participant_by_participant_id_and_allowed_event_id($participant_id, $allowed_event_id);
+  if ($subscription_participant == NULL)
+  {
+    throw new Exception("Unable to find subscription participant for allowed event $allowed_event_id and participant $participant_id.");
+  }
+  CRM_BoxOffice_BAO_Participant::set_subscription_event_id($participant_id, $subscription_participant->event_id);
+}
+
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Confirm($formName, &$form) {
   civiboxoffice_reserve_seats($formName, $form);
+  $participant_ids = $form->getVar('_participantIDS');
+  if (count($participant_ids) > 1) {
+    CRM_Core_Error::fatal("The current civiboxoffice implementation cannot handle registrations with multiple participants.");
+  }
+  $participant_id = $participant_ids[0];
+  $allowed_event_id = $form->_values['event']['id'];
+  civiboxoffice_record_subscription_usage($allowed_event_id, $participant_id);
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName, &$form) {
   civiboxoffice_reserve_seats($formName, $form);
+  $participant_id = $form->getVar('_id');
+  civiboxoffice_record_subscription_usage($formName, $form, $participant_id);
 }
 
 function civiboxoffice_civicrm_pre($op, $objectName, $id, &$params) {
@@ -519,6 +552,9 @@ function civiboxoffice_create_fusionticket_event($id, &$params) {
     $allowed_subscription_ids = array();
   }
   CRM_BoxOffice_BAO_SubscriptionAllowance::update_subscription_events_for_allowed_event_id($id, $allowed_subscription_ids);
+  if ($_POST) {
+    CRM_BoxOffice_BAO_Event::set_subscription_max_uses($id, $_POST['subscription_max_uses']);
+  }
 
   // on event create or edit, check submitted values for ft_category_id field
   if (isset($_POST['ft_category_id']) && ($_POST['ft_category_id'] != 0)) {

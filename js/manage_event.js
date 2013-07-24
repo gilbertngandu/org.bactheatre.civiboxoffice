@@ -4,7 +4,7 @@
 
   function setup()
   {
-    $('#allowed-subscription-area').insertBefore('.crm-event-manage-eventinfo-form-block-max_participants');
+    $('#civiboxoffice-staging-area tbody').children().insertBefore('.crm-event-manage-eventinfo-form-block-max_participants');
     $('#allowed-subscription-area').show();
     $('#civiboxoffice-staging-area').remove();
   }

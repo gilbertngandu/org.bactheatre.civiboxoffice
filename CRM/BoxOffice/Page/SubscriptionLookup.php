@@ -5,8 +5,25 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     $error_messages = array();
     $subscription_email_address = $_REQUEST['subscription_email_address'];
     $allowed_event_id = $_REQUEST['allowed_event_id'];
-    list($subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
-    if ($subscription_line_items != NULL)
+    list($subscription_event_id, $subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
+    dd($subscription_event_id, 'Foo');
+    if ($subscription_event_id != NULL)
+    {
+      $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_event_id($subscription_event_id);
+      dd($participants);
+      $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_event_id);
+      $uses = count($participants);
+      if ($uses >= $subscription_max_uses)
+      {
+	$usage_info = "$uses times";
+	if ($uses == 1)
+	{
+	  $usage_info = "$uses time";
+	}
+	$error_messages[] = "You have already used your Flex Pass $usage_info which is the maximum for that Flex Pass.";
+      }
+    }
+    if (empty($error_messages) && $subscription_line_items != NULL)
     {
       $quantity_for_price_field_ids = array();
       $price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($allowed_event_id);
@@ -64,7 +81,6 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
 	}
       }
     }
-
     if (!empty($error_messages))
     {
       $result['error'] = TRUE;
