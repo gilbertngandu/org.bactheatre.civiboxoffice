@@ -494,8 +494,6 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Confirm($
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName, &$form) {
   civiboxoffice_reserve_seats($formName, $form);
-  $participant_id = $form->getVar('_id');
-  civiboxoffice_record_subscription_usage($formName, $form, $participant_id);
 }
 
 function civiboxoffice_civicrm_pre($op, $objectName, $id, &$params) {
