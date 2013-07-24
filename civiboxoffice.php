@@ -237,6 +237,7 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
 	'seat_row_nr' => $seat->seat_row_nr,
 	'pmz_name' => $seat->pmz_name);
     }
+    $form->assign('show_seat_information', TRUE);
     $form->assign('seatInfo', $seatarr);
   }
   $subscription_participant_id = $form->get('subscription_participant_id');
@@ -270,6 +271,7 @@ function civiboxoffice_assign_seat_information($formName, &$form)
 	  'pmz_name' => $seat->pmz_name);
       }
     }
+    $form->assign('show_seat_information', TRUE);
     $form->assign('seatInfo', $seatarr);
   }
 }
