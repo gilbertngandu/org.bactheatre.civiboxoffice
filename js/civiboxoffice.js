@@ -82,105 +82,252 @@ function totalTickets() {
   return totaltickets;
 }
 
-function subscription_add_error(message) {
-  var message_html = "<div class=\"red\">\n" + message + "\n</div>\n";
-  cj('#subscription-messages').append(message_html);
-}
+(function()
+{
+  $ = this.cj;
 
-function subscription_add_message(message) {
-  var message_html = "<div>\n" + message + "\n</div>\n";
-  cj('#subscription-messages').append(message_html);
-}
-
-function subscription_clear_error_messages() {
-  cj('#subscription-messages').html('');
-}
-
-function subscription_ajax_error(jq_xhr, error_type, exception) {
-  subscription_add_error('There was an error requesting subscription information: ' + exception);
-}
-
-function subscription_update_fields(data, text_status, jq_xhr) {
-  if (data == null) {
-    subscription_add_error("There was an error looking up your subscription information.");
-    return;
+  var Subscription = function(data)
+  {
+    this.initialize(data);
   }
-  if (data['error']) {
-    subscription_add_error(data['error_message']);
-  } else {
-    var deduct_amount = 0;
-    var subscription_price_fields = data['subscription_price_fields'];
-    cj.each(subscription_price_fields, function() {
-      price_field = cj('#price_' + this['id']);
-      if (this['quantity'] != null) {
-	price_field.val(this['quantity']);
-      } else {
-	price_field.val(0);
-      }
-      price_field.prop('readonly', true);
-      price_field.css('background-color', 'rgb(235, 235, 228)');
-      eval( 'var option = ' + price_field.attr('price') );
-      element_index = option[0];
-      price[element_index] = 0;
-      price_field.attr('price', '[' + element_index + ',"0||"]');
-      service_fee_field = cj('input[name=price_32]');
-      if (service_fee_field.length > 0) {
-      	eval( 'var option = ' + service_fee_field.attr('price') );
-      	element_index = option[0];
-      	price[element_index] = 0;
-      	service_fee_field.attr('price', '["' + element_index + '","0||"]');
-        deduct_amount += 2;
-      }
-    });
-    totalfee -= deduct_amount;
-    display(totalfee);
-    if (totalfee <= 0) {
-      cj('#payment_information').hide();
-    }
-    cj('#subscription_participant_id').val(data['subscription_participant_id']);
-    var uses = data['subscription_uses'];
-    var uses_info = uses + ' times';
-    if (uses == 1)
+
+  Subscription.prototype =
+  {
+    find_price_field_data_by_price_field_id: function(id)
     {
-      uses_info = uses + ' time';
-    }
-    subscription_add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below. You have used your flex pass " + uses_info + ' out of ' + data['subscription_max_uses'] + ' maximum. This purchase will bring your usage to ' + (uses + 1) + '.');
-  }
-}
+      var found_price_field_data = null;
 
-function setup_subscription() {
-  if (cj("#subscription-section-staging-area").length == 0) {
-    return;
-  }
-  cj('#subscription-section').insertBefore('#priceset');
-  cj('#subscription_email_address').on('blur', function() {
-    cj('#subscription_participant_id').val('');
-    cj('#payment_information').show();
-    price_fields = cj('#priceset input');
-    price_fields.prop('readonly', false);
-    price_fields.css('background-color', '');
-    if ($(this).val().trim() == '') {
-      return;
+      $(this.price_fields).each(function()
+      {
+	if ('price_' + this['id'] == id) 
+	{
+	  found_price_field_data = this;	  
+	}
+      });
+
+      return found_price_field_data;
+    },
+
+    initialize: function(data)
+    {
+      this.event_title = data['event_title'];
+      this.max_uses = data['max_uses'];
+      this.participant_id = data['participant_id'];
+      this.price_fields = data['price_fields'];
+      this.line_items = data['line_items'];
+      this.uses = data['uses'];
+    },
+
+    line_items_string: function()
+    {
+      var item_strings = [];
+      $(this.line_items).each(function()
+      {
+	item_strings.push(this.label + ': ' + this.qty); 
+      });
+      return item_strings.join(', ');
     }
-    subscription_clear_error_messages();
-    data = {
-      'allowed_event_id': event_id,
-      'subscription_email_address': $(this).val(),
-    };
-    options = {
-      'data': data,
-      'dataType': 'json',
-      'error': subscription_ajax_error,
-      'success': subscription_update_fields,
-      'type': 'GET',
-      'url': '/civicrm/civiboxoffice/subscription_lookup',
-    };
-    cj.ajax(options);
-  });
-}
+  };
+
+  var SubscriptionManager = this.SubscriptionManager = function()
+  {
+    this.initialize();
+  };
+
+  SubscriptionManager.prototype =
+  {
+    add_error: function(message)
+    {
+      var message_html = "<div class=\"red\">\n" + message + "\n</div>\n";
+      this.message_area.append(message_html);
+    },
+
+    add_message: function(message)
+    {
+      var message_html = "<div>\n" + message + "\n</div>\n";
+      this.message_area.append(message_html);
+    },
+
+    clear: function()
+    {
+      this.clear_messages();
+      $('#subscription_participant_id').val('');
+      $('#payment_information').show();
+      price_fields = $('#priceset input');
+      price_fields.prop('disabled', false);
+      price_fields.prop('readonly', false);
+      price_fields.css('background-color', '');
+      price_fields.val('');
+    },
+
+    clear_messages: function()
+    {
+      this.message_area.html('');
+    },
+
+    initialize: function()
+    {
+      if ($("#subscription-section-staging-area").length == 0) {
+	return;
+      }
+      this.message_area = $('#subscription-messages');
+      $('#subscription-section').insertBefore('#priceset');
+      this.subscription_choice_area = $('#subscription-choice-area');
+      this.subscription_email_address = $('#subscription_email_address');
+      this.subscription_email_address.on('blur', $.proxy(this.lookup_subscription, this));
+      this.subscription_participant_id = $('#subscription_participant_id');
+    },
+
+    lookup_error: function(jq_xhr, error_type, exception)
+    {
+      this.add_error('There was an error requesting subscription information: ' + exception);
+    },
+
+    lookup_subscription: function()
+    {
+      if (this.subscription_email_address.val().trim() == '') {
+	return;
+      }
+      this.clear();
+      data = {
+	'allowed_event_id': event_id,
+	'subscription_email_address': this.subscription_email_address.val(),
+      };
+      options = {
+	'data': data,
+	'dataType': 'json',
+	'error': $.proxy(this.lookup_error, this),
+	'success': $.proxy(this.lookup_success, this),
+	'type': 'GET',
+	'url': '/civicrm/civiboxoffice/subscription_lookup',
+      };
+      $.ajax(options);
+    },
+
+    lookup_success: function(data, text_status, jq_xhr)
+    {
+      if (data == null) {
+	this.add_error("There was an error looking up your subscription information.");
+	return;
+      }
+      if (data['error']) {
+	this.add_error(data['error_message']);
+      } else {
+	this.update_subscriptions_data(data);
+      }
+    },
+
+    present_choices: function()
+    {
+      this.subscription_choice_area.html('');
+      this.subscription_choice_area.html('<label for="subscription-selector">You have more than one subscription. Please select the subscription you wish to use:</label><select id="subscription-selector">\n</select>');
+      subscription_selector = $('#subscription-selector');
+      subscription_selector.append('<option value=""> - I don\'t want to use a subscription. - </option>');
+      $(this.subscriptions).each(function(index)
+      {
+	var option_html;
+	var subscription_info;
+
+	subscription_info = this.event_title + ' (' + this.line_items_string() + ') - Used ' + this.uses + '/' + this.max_uses + ' times.';
+	if (this.uses >= this.max_uses) 
+	{
+	  option_html = '<option disabled="true">' + subscription_info + ' Used up.</option>';
+	}
+	else
+	{
+	  option_html = '<option id="subscription_' + index + '" value="' + index + '">' + subscription_info + '</option>';
+	}
+	subscription_selector.append(option_html);
+      });
+      subscription_selector.on('change', $.proxy(this.subscription_selected, this));
+    },
+
+    set_data: function(subscriptions_data)
+    {
+      this.subscriptions = [];
+      for (var i = 0; i < subscriptions_data.length; ++i)
+      {
+	this.subscriptions.push(new Subscription(subscriptions_data[i]));
+      }
+    },
+
+    set_fields: function()
+    {
+      var subscription = this.current_subscription;
+      var price_fields = $('#priceset input');
+      price_fields.each(function()
+      {
+	var price_field = $(this);
+	var price_field_data = subscription.find_price_field_data_by_price_field_id(price_field.attr('id'));
+	if (price_field_data == null)
+	{
+	  price_field.prop('disabled', true);
+	}
+	else
+	{
+	  if (price_field_data['quantity'] == null)
+	  {
+	    price_field.val(0);
+	  }
+	  else
+	  {
+	    price_field.val(price_field_data['quantity']);
+	  }
+	  price_field.prop('readonly', true);
+	  price_field.css('background-color', 'rgb(235, 235, 228)');
+	  eval( 'var option = ' + price_field.attr('price') );
+	  element_index = option[0];
+	  price[element_index] = 0;
+	  price_field.attr('price', '[' + element_index + ',"0||"]');
+	}
+      });
+      totalfee = 0;
+      display(totalfee);
+      $('#payment_information').hide();
+      this.subscription_participant_id.val(subscription.participant_id);
+      var uses_info = subscription.uses + ' times';
+      if (subscription.uses == 1)
+      {
+	uses_info = uses + ' time';
+      }
+      this.add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below. You have used your flex pass " + uses_info + ' out of ' + subscription.max_uses + ' maximum. This purchase will bring your usage to ' + (subscription.uses + 1) + '.');
+    },
+
+    subscription_selected: function(event)
+    {
+      this.clear_messages();
+      var subscription_selector = $(event.target);
+      var index = subscription_selector.val();
+      if (index == '')
+      {
+	this.current_subscription = null;
+	this.clear();
+      }
+      else
+      {
+	this.current_subscription = this.subscriptions[index];
+	this.set_fields();
+      }
+    },
+
+    update_subscriptions_data: function(data)
+    {
+      this.set_data(data['subscriptions']);
+      if (this.subscriptions.length == 1)
+      {
+	this.chosen_subscription = this.subscription[0];
+	this.set_fields();
+      }
+      else
+      {
+	this.present_choices();
+      }
+    }
+  };
+}).call(this);
 
 cj(document).ready(function() {
-  setup_subscription();
+  new SubscriptionManager();
   if (cj('#seatmapdefault').length == 0) {
     return;
   }

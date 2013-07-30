@@ -462,16 +462,26 @@ function civiboxoffice_reserve_seats($formName, &$form)
 
 function civiboxoffice_record_subscription_usage($subscription_participant_id, $allowed_event_id, $participant_id)
 {
-  $subscription_participant = CRM_BoxOffice_BAO_SubscriptionAllowance::find_participant_by_participant_id_and_allowed_event_id($participant_id, $allowed_event_id);
-  if ($subscription_participant == NULL)
+  $subscription_participants = CRM_BoxOffice_BAO_Participant::find_all_subscription_participants_for_allowed_particpant_id($participant_id);
+  if (empty($subscription_participants))
   {
     throw new Exception("Unable to find subscription participant for allowed event $allowed_event_id and participant $participant_id.");
   }
-  if ($subscription_participant->id != $subscription_participant_id)
+  $subscription_participant = NULL;
+  foreach ($subscription_participants as $subscription_participant_to_check)
   {
-    throw new Exception("Found subscription participant record {$subscription_participant->id}, but that ID does not match the ID from the form {$subscription_participant_id}.");
+    if ($subscription_participant_to_check->id == $subscription_participant_id)
+    {
+      $subscription_participant = $subscription_participant_to_check;
+      break;
+    }
   }
-  CRM_BoxOffice_BAO_Participant::set_subscription_event_id($participant_id, $subscription_participant->event_id);
+
+  if ($subscription_participant == NULL)
+  {
+    throw new Exception("Couldn't find a subscription participant record for allowed participant {$participant_id} that matches subscription participant {$subscription_participant_id}.");
+  }
+  CRM_BoxOffice_BAO_Participant::set_subscription_participant_id($participant_id, $subscription_participant->id);
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Register($formName, &$form) {

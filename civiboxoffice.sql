@@ -48,5 +48,5 @@ CREATE TABLE `civiboxoffice_price_set_associations` (
 )  ENGINE=InnoDB DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci  ;
 
 ALTER TABLE `civicrm_event` ADD COLUMN `subscription_max_uses` INT UNSIGNED;
-ALTER TABLE `civicrm_participant` ADD COLUMN `subscription_event_id` INT UNSIGNED;
-ALTER TABLE `civicrm_participant` ADD CONSTRAINT FK_civicrm_event_subscription_event_id FOREIGN KEY (`subscription_event_id`) REFERENCES `civicrm_event` (`id`);
+ALTER TABLE `civicrm_participant` ADD COLUMN `subscription_participant_id` INT UNSIGNED;
+ALTER TABLE `civicrm_participant` ADD CONSTRAINT FK_civicrm_event_subscription_participant_id FOREIGN KEY (`subscription_participant_id`) REFERENCES `civicrm_participant` (`id`);

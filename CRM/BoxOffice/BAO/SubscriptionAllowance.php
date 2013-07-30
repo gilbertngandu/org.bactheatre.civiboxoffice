@@ -2,12 +2,6 @@
 
 class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_SubscriptionAllowance
 {
-  public static function counted_particpant_status_ids()
-  {
-    $counted_statuses = CRM_Event_PseudoConstant::participantStatus(NULL, 'is_counted = 1');
-    return implode(', ', array_keys($counted_statuses));
-  }
-
   public static function find_all_by_allowed_event_id($allowed_event_id)
   {
     $subscription_allowance = new CRM_BoxOffice_BAO_SubscriptionAllowance();
@@ -21,54 +15,18 @@ class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_Subscrip
     return $subscription_allowances;
   }
 
-  public static function find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id)
+  public static function find_line_items_for_subscription_id($subscription_id)
   {
-    $params = array
-    (
-      1 => array(self::counted_particpant_status_ids(), 'String'),
-      2 => array($allowed_event_id, 'Integer'),
-      3 => array($subscription_email_address, 'String'),
-    );
-    $sql = <<<EOS
-      SELECT
-	civicrm_participant.*
-      FROM
-	civiboxoffice_subscription_allowances
-      JOIN
-	civicrm_participant ON (civiboxoffice_subscription_allowances.subscription_event_id = civicrm_participant.event_id)
-      JOIN
-	civicrm_email ON (civicrm_participant.contact_id = civicrm_email.contact_id)
-      WHERE
-	civicrm_participant.status_id IN (%1)
-      AND
-	civiboxoffice_subscription_allowances.allowed_event_id = %2
-      AND
-	civicrm_email.email = %3
-EOS;
-    $dao = CRM_Core_DAO::executeQuery($sql, $params, 'CRM_Event_BAO_Participant');
-    $dao->fetch();
-    if ($dao->N == 1) 
+    $subscription_line_items = array();
+    $line_item = new CRM_Price_BAO_LineItem();
+    $line_item->entity_table = 'civicrm_participant';
+    $line_item->entity_id = $subscription_id;
+    $line_item->find(FALSE);
+    while ($line_item->fetch())
     {
-      $subscription_event_id = $dao->event_id;
-      $subscription_line_items = array();
-      $line_item = new CRM_Price_BAO_LineItem();
-      $line_item->entity_table = 'civicrm_participant';
-      $line_item->entity_id = $dao->id;
-      $line_item->find(FALSE);
-      while ($line_item->fetch())
-      {
-	$subscription_line_items[] = clone($line_item);
-      }
-      return array($dao, $subscription_line_items, NULL);
+      $subscription_line_items[] = clone($line_item);
     }
-    elseif ($dao->N > 1)
-    {
-      return array(NULL, NULL, "Found more than one matching subscription. Please call BACT for assistance.");
-    }
-    else
-    {
-      return array(NULL, NULL, "Unable to find any subscriptions for '$subscription_email_address'");
-    }
+    return $subscription_line_items;
   }
 
   public static function find_participant_by_participant_id_and_allowed_event_id($participant_id, $allowed_event_id) 

@@ -1,23 +1,6 @@
 <?php
 
 class CRM_BoxOffice_Page_SubscriptionLookup {
-  static function check_subscription_uses($subscription_participant)
-  {
-    $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_participant($subscription_participant);
-    $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_participant->event_id);
-    $subscription_uses = count($participants);
-    if ($subscription_uses >= $subscription_max_uses)
-    {
-      $usage_info = "$subscription_uses times";
-      if ($subscription_uses == 1)
-      {
-	$usage_info = "$subscription_uses time";
-      }
-      return array($subscription_uses, $subscription_max_uses, "You have already used your Flex Pass $usage_info which is the maximum for that Flex Pass.");
-    }
-    return array($subscription_uses, $subscription_max_uses, NULL);
-  }
-
   static function generate_associated_price_objects($price_set_associations, $subscription_line_items)
   {
     $error_messages = array();
@@ -68,9 +51,18 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     return $subscription_price_fields;
   }
 
+  static function get_subscription_uses($subscription_participant)
+  {
+    $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_participant($subscription_participant);
+    $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_participant->event_id);
+    $subscription_uses = count($participants);
+    return array($subscription_uses, $subscription_max_uses, ($subscription_uses >= $subscription_max_uses));
+  }
+
   static function lookup() {
     $result = array();
     $error_messages = array();
+    $subscriptions = array();
     $subscription_email_address = $_REQUEST['subscription_email_address'];
     $allowed_event_id = $_REQUEST['allowed_event_id'];
     $price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($allowed_event_id);
@@ -80,45 +72,64 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     }
     if (empty($error_messages))
     {
-      list($subscription_participant, $subscription_line_items, $error_message) = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_by_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
-      if ($subscription_participant == NULL)
+      $subscription_participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
+      if (empty($subscription_participants))
       {
-	$error_messages[] = $error_message;
-      }
-      else
-      {
-	$result['subscription_participant_id'] = $subscription_participant->id;
+	$error_messages[] = "Unable to find any subscriptions for '$subscription_email_address'.";
       }
     }
-    if (empty($error_messages) && $subscription_participant != NULL)
+    if (empty($error_messages))
     {
-      list($subscription_uses, $subscription_max_uses, $error_message) = static::check_subscription_uses($subscription_participant);
-      if ($error_message != NULL)
+      foreach ($subscription_participants as $subscription_participant)
       {
-	$error_messages[] = $error_message;
+	$subscription_line_items = CRM_BoxOffice_BAO_SubscriptionAllowance::find_line_items_for_subscription_id($subscription_participant->id);
+	list($subscription_uses, $subscription_max_uses, $exceeded_max) = static::get_subscription_uses($subscription_participant);
+	list($associated_price_objects, $error_messages) = static::generate_associated_price_objects($price_set_associations, $subscription_line_items);
+	if (empty($error_messages))
+	{
+	  $subscription_price_fields = static::generate_subscription_price_fields($associated_price_objects);
+	  $pared_down_line_items = static::pare_down_subscription_line_items($subscription_line_items);
+	  $subscription = array
+	  (
+	    'event_title' => $subscription_participant->event_title,
+	    'line_items' => $pared_down_line_items,
+	    'max_uses' => $subscription_max_uses,
+	    'participant_id' => $subscription_participant->id,
+	    'price_fields' => $subscription_price_fields,
+	    'uses' => $subscription_uses,
+	  );
+	  $subscriptions[] = $subscription;
+	}
+	else
+	{
+	  $error_messages[] = "Couldn't find any matching price fields in the subscription event.";
+	}
       }
-      $result['subscription_uses'] = $subscription_uses;
-      $result['subscription_max_uses'] = $subscription_max_uses;
     }
-    if (empty($error_messages) && $subscription_line_items != NULL)
+    if (empty($error_messages))
     {
-      list($associated_price_objects, $error_messages) = static::generate_associated_price_objects($price_set_associations, $subscription_line_items);
-      $subscription_price_fields = static::generate_subscription_price_fields($associated_price_objects);
-      if (empty($subscription_price_fields)) 
-      {
-	$error_messages[] = "Couldn't find any matching price fields in the subscription event.";
-      }
-      if (empty($error_messages))
-      {
-	$result['subscription_price_fields'] = $subscription_price_fields;
-      }
+      $result['subscriptions'] = $subscriptions;
     }
-    if (!empty($error_messages))
+    else
     {
       $result['error'] = TRUE;
       $result['error_message'] = implode("\n<br>\n", $error_messages);
     }
     print(json_encode($result));
     CRM_Utils_System::civiExit();
+  }
+
+  static function pare_down_subscription_line_items($subscription_line_items)
+  {
+    $pared_down_line_items = array();
+    foreach ($subscription_line_items as $subscription_line_item)
+    {
+      $pared_down_line_items[] = array
+      (
+	'label' => $subscription_line_item->label,
+	'qty' => $subscription_line_item->qty,
+      );
+    }
+    return $pared_down_line_items;
   }
 }
