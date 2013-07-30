@@ -288,7 +288,7 @@ function totalTickets() {
       var uses_info = subscription.uses + ' times';
       if (subscription.uses == 1)
       {
-	uses_info = uses + ' time';
+	uses_info = subscription.uses + ' time';
       }
       this.add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below. You have used your flex pass " + uses_info + ' out of ' + subscription.max_uses + ' maximum. This purchase will bring your usage to ' + (subscription.uses + 1) + '.');
     },
