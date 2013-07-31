@@ -51,7 +51,6 @@ EOS;
       WHERE
 	id = %1
 EOS;
-    dd($sql, 'foo');
     CRM_Core_DAO::executeQuery($sql, array(1 => array($event->id, 'Integer')));
   }
 }

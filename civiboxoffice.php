@@ -122,15 +122,15 @@ function civiboxoffice_build_seat_selector($formName, &$form, $category_type) {
   if ($_POST) {
     return;
   }
+  ft_security();
+
   CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/civiboxoffice.js');
+
   $event_id = $form->getVar('_eventId');
   $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
   if (!isset($event_id) || !isset($snippet)) {
     return;
   }
-  ft_security();
-  require_once('fusionticket/includes/classes/class.router.php');
-  require_once('fusionticket/includes/shop_plugins/function.placemap-civicrm.php');
 
   $event = new CRM_Event_BAO_Event();
   $event->id = $event_id;
@@ -139,33 +139,11 @@ function civiboxoffice_build_seat_selector($formName, &$form, $category_type) {
   }
 
   $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, $category_type);
-  if ($place_map_category != NULL)
-  {
-    // cancel seats previously on hold by same qfkey -- maybe user clicked
-    // go back or page reload?
-    $seats = Seat::loadAllSid(substr($form->controller->_key, strlen($form->controller->_key) - 32));
-    if ($seats) {
-      $staleseats = Array();
-      foreach ($seats as $seatid => $seat) {
-	if (! strcmp($seat->seat_status, Seat::STATUS_HOLD)) {
-	  $staleseats[$seatid] = Array('seat_id' => $seat->seat_id,
-	    'event_id' => $category['category_event_id'],
-	    'category_id' => $category['category_id'],
-	    'pmp_id' => $category['category_pmp_id']);
-	}
-      }
-      if ($staleseats) {
-	Seat::cancel($staleseats, 0);
-      }
-    }
-
-    // fusionticket housekeeping to free abandoned seat selections
-    check_system();
-
-    // load seatmap and assign to form
-    $seatmap = placeMapDraw((array) $place_map_category);
-    $form->assign('seatMap', $seatmap);
-  }
+  $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
+  CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
+  $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
+  $form->assign('place_map_category', $place_map_category);
+  $form->assign('seatMap', $seatmap);
 }
 
 function civiboxoffice_event_allows_subscriptions($event_id) {
@@ -379,13 +357,8 @@ function civiboxoffice_validate_seats($formName, &$fields, &$files, &$form, &$er
 
     // mark selected seats as on-hold
     // we will move them to reserved in postProcess
-    $result = Seat::reservate(substr($form->controller->_key,
-      strlen($form->controller->_key) - 32),
-    $submitvalues['ft_category_event_id'],
-    $submitvalues['ft_category_id'],
-    $seats,
-    $submitvalues['ft_category_numbering'],
-    false, false);
+    $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
+    $result = Seat::reservate($sid, $submitvalues['ft_category_event_id'], $submitvalues['ft_category_id'], $seats, $submitvalues['ft_category_numbering'], false, false);
 
     if (!$result) {
       // if we couldn't reserve seats, set error on form
@@ -566,7 +539,6 @@ function civiboxoffice_create_fusionticket_event($id, &$params) {
   ft_security();
   $general_admission_category_id = $_POST['general_admission_category_id'];
   $subscription_category_id = $_POST['subscription_category_id'];
-  dd($subscription_category_id, 'subscription_category_id');
   $save_event = FALSE;
   if ($general_admission_category_id != NULL && $general_admission_category_id != 0)
   {

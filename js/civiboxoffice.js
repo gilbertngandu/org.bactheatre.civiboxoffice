@@ -151,6 +151,8 @@ function totalTickets() {
     clear: function()
     {
       this.clear_messages();
+      $('#seatmap').html('<h2>Loading seatmap. Please wait...</h2>');
+      $('#subscription-choice-area').html('');
       $('#subscription_participant_id').val('');
       $('#payment_information').show();
       price_fields = $('#priceset input');
@@ -191,6 +193,7 @@ function totalTickets() {
       this.clear();
       data = {
 	'allowed_event_id': event_id,
+	'qfKey': $('input[name="qfKey"]').val(),
 	'subscription_email_address': this.subscription_email_address.val(),
       };
       options = {
@@ -293,6 +296,37 @@ function totalTickets() {
       this.add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below. You have used your flex pass " + uses_info + ' out of ' + subscription.max_uses + ' maximum. This purchase will bring your usage to ' + (subscription.uses + 1) + '.');
     },
 
+    request_seatmap: function(category_type)
+    {
+      data = {
+	'allowed_event_id': event_id,
+	'category_type': category_type,
+	'qfKey': $('input[name="qfKey"]').val(),
+      };
+      options = {
+	'data': data,
+	'dataType': 'json',
+	'error': $.proxy(this.lookup_error, this),
+	'success': $.proxy(this.request_seatmap_success, this),
+	'type': 'GET',
+	'url': '/civicrm/civiboxoffice/seat_map',
+      };
+      $.ajax(options);
+    },
+
+    request_seatmap_success: function(data, text_status, jq_xhr)
+    {
+      if (data == null) {
+	this.add_error("There was an error looking up your subscription information.");
+	return;
+      }
+      if (data['error']) {
+	this.add_error(data['error_message']);
+      } else {
+	$('#seatmap').html(data['seatmap']);
+      }
+    },
+
     subscription_selected: function(event)
     {
       this.clear_messages();
@@ -300,11 +334,13 @@ function totalTickets() {
       var index = subscription_selector.val();
       if (index == '')
       {
+	this.request_seatmap('general_admission');
 	this.current_subscription = null;
 	this.clear();
       }
       else
       {
+	this.request_seatmap('subscription');
 	this.current_subscription = this.subscriptions[index];
 	this.set_fields();
       }
@@ -312,10 +348,11 @@ function totalTickets() {
 
     update_subscriptions_data: function(data)
     {
+      $('#seatmap').html(data['seatmap']);
       this.set_data(data['subscriptions']);
       if (this.subscriptions.length == 1)
       {
-	this.chosen_subscription = this.subscription[0];
+	this.current_subscription = this.subscriptions[0];
 	this.set_fields();
       }
       else

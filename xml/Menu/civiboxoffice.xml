@@ -5,4 +5,10 @@
     <access_callback>1</access_callback>
     <is_public>true</is_public>
   </item>
+  <item>
+    <path>civicrm/civiboxoffice/seat_map</path>
+    <page_callback>CRM_BoxOffice_Page_SubscriptionLookup::seat_map</page_callback>
+    <access_callback>1</access_callback>
+    <is_public>true</is_public>
+  </item>
 </menu>

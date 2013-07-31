@@ -31,6 +31,20 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     return array($associated_price_objects, $error_messages);
   }
 
+  static function generate_seat_map($allowed_event_id, $qfkey, $category_type)
+  {
+    $allowed_event = new CRM_Event_BAO_Event();
+    $allowed_event->id = $allowed_event_id;
+    if (!$allowed_event->find(TRUE))
+    {
+      throw new Exception("Error finding allowed event $allowed_event_id.");
+    }
+    $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($allowed_event, $category_type); 
+    $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($qfkey);
+    CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
+    return CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
+  }
+
   static function generate_subscription_price_fields($associated_price_objects)
   {
     $subscription_price_fields = array();
@@ -60,6 +74,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
   }
 
   static function lookup() {
+    ft_security();
     $result = array();
     $error_messages = array();
     $subscriptions = array();
@@ -108,6 +123,15 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     }
     if (empty($error_messages))
     {
+      if (count($subscriptions) > 1)
+      {
+	$category_type = 'general_admission';
+      }
+      else
+      {
+	$category_type = 'subscription';
+      }
+      $result['seatmap'] =  static::generate_seat_map($allowed_event_id, $_REQUST['qfKey'], $category_type);
       $result['subscriptions'] = $subscriptions;
     }
     else
@@ -131,5 +155,14 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
       );
     }
     return $pared_down_line_items;
+  }
+
+  static function seat_map()
+  {
+    ft_security();
+    $seatmap = static::generate_seat_map($_REQUEST['allowed_event_id'], $_REQUST['qfKey'], $_REQUEST['category_type']);
+    $result = array('error' => FALSE, 'seatmap' => $seatmap);
+    print(json_encode($result));
+    CRM_Utils_System::civiExit();
   }
 }
