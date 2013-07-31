@@ -118,39 +118,29 @@ function civiboxoffice_civicrm_buildForm($formName, &$form) {
   }
 }
 
-function civiboxoffice_build_seat_selector($formName, &$form) {
+function civiboxoffice_build_seat_selector($formName, &$form, $category_type) {
   if ($_POST) {
     return;
   }
   CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/civiboxoffice.js');
-  $eid = $form->getVar('_eventId');
+  $event_id = $form->getVar('_eventId');
   $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
-  if (!isset($eid) || !isset($snippet)) {
+  if (!isset($event_id) || !isset($snippet)) {
     return;
   }
   ft_security();
   require_once('fusionticket/includes/classes/class.router.php');
   require_once('fusionticket/includes/shop_plugins/function.placemap-civicrm.php');
 
-  // Fusionticket Category.category_data field overloaded to store civi event ids
-  // use this as our mapping from civi event id to fusionticket seat map category
-  $query = 'SELECT category_id, category_event_id, category_pmp_id,
-    category_ident, category_numbering
-    FROM Category
-    WHERE category_data LIKE "%civicrm_event_id=' . $eid . '%"';
+  $event = new CRM_Event_BAO_Event();
+  $event->id = $event_id;
+  if (!$event->find(TRUE)) {
+    throw new Exception("Couldn't find event with ID {$event_id} to setup seat selection.");
+  }
 
-  if ($res=ShopDB::query($query)) {
-    $category = Array();
-
-    // only supporting one category per event for now
-    // so $res should be only one row
-    while ($data=shopDB::fetch_assoc($res)) {
-      foreach ($data as $mykey => $myvalue) {
-	$form->assign('ft_' . $mykey, $myvalue);
-	$category[$mykey] = $myvalue;
-      }
-    }
-
+  $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, $category_type);
+  if ($place_map_category != NULL)
+  {
     // cancel seats previously on hold by same qfkey -- maybe user clicked
     // go back or page reload?
     $seats = Seat::loadAllSid(substr($form->controller->_key, strlen($form->controller->_key) - 32));
@@ -173,7 +163,7 @@ function civiboxoffice_build_seat_selector($formName, &$form) {
     check_system();
 
     // load seatmap and assign to form
-    $seatmap = placeMapDraw($category);
+    $seatmap = placeMapDraw((array) $place_map_category);
     $form->assign('seatMap', $seatmap);
   }
 }
@@ -218,7 +208,7 @@ function civiboxoffice_add_subscription($form) {
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Register($formName, &$form) {
-  civiboxoffice_build_seat_selector($formName, $form);
+  civiboxoffice_build_seat_selector($formName, $form, 'general_admission');
   civiboxoffice_add_subscription($form);
 }
 
@@ -285,59 +275,45 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ParticipantView($formNam
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Participant($formName, &$form) {
-  civiboxoffice_build_seat_selector($formName, $form);
+  civiboxoffice_build_seat_selector($formName, $form, 'general_admission');
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($formName, $form) {
   $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
   $component = CRM_Utils_Array::value('component', $_REQUEST);
+  $form_event_id = $form->getVar('_entityId');
+  $event_id = $form->_id;
 
   // add seatmap selector to event configuration page
   ft_security();
   require_once('fusionticket/includes/classes/class.router.php');
-  $form_event_id = $form->getVar('_entityId');
-  // check if this event already has a seatmap / category configured
-  $query = 'SELECT Ort.ort_name, PlaceMap2.pm_name, Category.category_name
-    FROM Category
-    LEFT JOIN PlaceMap2 ON Category.category_pm_id = PlaceMap2.pm_id
-    LEFT JOIN Ort ON PlaceMap2.pm_ort_id = Ort.ort_id';
-  $query .= ' WHERE Category.category_data LIKE "%civicrm_event_id=' . $form_event_id . '%"';
 
-  if (($res=ShopDB::query($query)) && $form_event_id) {
-
-    // only supporting one category per event for now
-    // so $res should be only one row
-    while ($data=shopDB::fetch_assoc($res)) {
-      $existing_seatmap = implode(' -- ', array_values($data));
+  if ($event_id != NULL)
+  {
+    $event = new CRM_Event_BAO_Event();
+    $event->id = $event_id;
+    if (!$event->find(TRUE))
+    {
+      throw new Exception("Couldn't find event {$event_id} in order to add fusionticket fields to event edit info page.");
     }
-    if (isset($existing_seatmap)) {
-      $form->assign('existing_seatmap', $existing_seatmap);
+
+    if ($event->fusionticket_general_admission_category_id != NULL)
+    {
+      $general_admission_seat_map = CRM_BoxOffice_FusionTicket_PlaceMapCategory::build_name($event->fusionticket_general_admission_category_id);
+      $form->assign('general_admission_seat_map', $general_admission_seat_map);
+    }
+
+    if ($event->fusionticket_subscription_category_id != NULL)
+    {
+      $subscription_seat_map = CRM_BoxOffice_FusionTicket_PlaceMapCategory::build_name($event->fusionticket_subscription_category_id);
+      $form->assign('subscription_seat_map', $subscription_seat_map);
     }
   }
-  else {
-    // if no existing seatmap for this event, display a selector
-    $query = "SELECT Category.category_id, Category.category_name, PlaceMap2.pm_id, Ort.ort_id, PlaceMap2.pm_ort_id,
-      PlaceMap2.pm_name, Ort.ort_name
-      FROM Category
-      LEFT JOIN PlaceMap2 ON Category.category_pm_id = PlaceMap2.pm_id
-      LEFT JOIN Ort ON PlaceMap2.pm_ort_id = Ort.ort_id
-      WHERE pm_event_id IS NULL
-      ORDER BY ort_name";
-    if (!$res = ShopDB::query($query)) {
-      return;
-    }
-    $ft_categories = Array();
-    $ft_categories[] = Array('ort_name' => 'None',
-      'pm_name' => 'None',
-      'category_id' => 0,
-      'category_name' => 'None');
-    while ($data=shopDB::fetch_assoc($res)) {
-      $ft_categories[] = Array('ort_name' => $data['ort_name'],
-	'pm_name' => $data['pm_name'],
-	'category_id' => $data['category_id'],
-	'category_name' => $data['category_name']);
-    }
-    $form->assign('ft_categories', $ft_categories);
+
+  if ($general_admission_seat_map == NULL || $subscription_seat_map == NULL)
+  {
+    $categories = CRM_BoxOffice_FusionTicket_PlaceMapCategory::categories_for_select();
+    $form->assign('ft_categories', $categories);
   }
 
   if (isset($_POST['subscription_max_uses'])) {
@@ -345,13 +321,9 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
   }
     
   if (($snippet == NULL && $form_event_id == NULL) || ($snippet && $component == 'event')) {
-    $event_id = $form_event_id;
-    if ($event_id == NULL) {
-      $event_id = $form->_id;
-    }
-    if ($event_id == NULL) {
+    $form->assign('show_civiboxoffice_staging_area', TRUE);
+    if ($event_id == NULL)
       $subscription_allowances = array();
-    }
     else {
       $subscription_allowances = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event_id);
     }
@@ -584,62 +556,37 @@ function civiboxoffice_create_fusionticket_event($id, &$params) {
     CRM_BoxOffice_BAO_Event::set_subscription_max_uses($id, $_POST['subscription_max_uses']);
   }
 
-  // on event create or edit, check submitted values for ft_category_id field
-  if (isset($_POST['ft_category_id']) && ($_POST['ft_category_id'] != 0)) {
-    ft_security();
-    $ft_category_id = $_POST['ft_category_id'];
-    require_once('fusionticket/includes/classes/class.router.php');
+  $event = new CRM_Event_BAO_Event();
+  $event->id = $id;
+  if (!$event->find(TRUE))
+  {
+    throw new Exception("Couldn't find event $id when trying to update fusion ticket fields.");
+  }
 
-    // use selected category to lookup values needed to create FT event
-    $query = "SELECT Category.category_pm_id, Category.category_ident, PlaceMap2.pm_ort_id
-      FROM Category
-      LEFT JOIN PlaceMap2 ON Category.category_pm_id = PlaceMap2.pm_id
-      WHERE category_id=" . $ft_category_id;
-    if ($res=ShopDB::query($query)) {
-      while ($data=shopDB::fetch_assoc($res)) {
-	$placemap_id = $data['category_pm_id'];
-	$category_ident = $data['category_ident'];
-	$ort_id = $data['pm_ort_id'];
-      }
-    }
-    else {
-      CRM_Core_Error::fatal("Selected FusionTicket event/category not found.");
-    }
-
-    // save civi $_POST values so we can restore them later
-    $civi_POST = $_POST;
-
-    // build fake $_POST for ft event create
-    $date = array_combine(Array('event_date-m', 'event_date-d', 'event_date-y'),
-      explode('/', $civi_POST['start_date']));
-    $timehour = date("H", strtotime($civi_POST['start_date_time']));
-    $timemin = date("i", strtotime($civi_POST['start_date_time']));
-    $_POST = Array('event_name' => $civi_POST['title'],
-      'event_pm_ort_id' => $placemap_id . ',' . $ort_id,
-      'event_status' => 'unpub',
-      'event_time-h' => $timehour,
-      'event_time-m' => $timemin);
-    $_POST = array_merge($_POST, $date);
-
-    // create ft event
-    $ft_event = new Event(true);
-    $ft_event->fillPost();
-    $ft_event_id = $ft_event->saveEx();
-    // publish ft event
-    unset($stats);
-    unset($pmps);
-    $ft_event->publish($stats, $pmps);
-
-    // store civi event ID in category_data field of new category copy
-    $query = 'UPDATE Category
-      SET category_data = "civicrm_event_id=' . $id . '"' .
-      ' WHERE category_event_id=' . $ft_event_id .
-      ' AND category_ident=' . $category_ident;
-    if (!ShopDB::query($query)) {
-      CRM_Core_Session::setStatus('Error updating FusionTicket event/category.  Check database consistency.');
-    }
-
-    // restore civi $_POST values
-    $_POST = $civi_POST;
-  }		
+  ft_security();
+  $general_admission_category_id = $_POST['general_admission_category_id'];
+  $subscription_category_id = $_POST['subscription_category_id'];
+  dd($subscription_category_id, 'subscription_category_id');
+  $save_event = FALSE;
+  if ($general_admission_category_id != NULL && $general_admission_category_id != 0)
+  {
+    $general_admission_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($general_admission_category_id);
+    $ft_event = CRM_BoxOffice_FusionTicket_Event::create_from_category_and_civicrm_event($general_admission_category, $event);
+    $event_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_by_category_and_event($general_admission_category, $ft_event);
+    $event->fusionticket_general_admission_category_id = $event_category->id;
+    $save_event = TRUE;
+  }
+  
+  if ($subscription_category_id != NULL && $subscription_category_id != 0)
+  {
+    $subscription_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($subscription_category_id);
+    $ft_event = CRM_BoxOffice_FusionTicket_Event::create_from_category_and_civicrm_event($subscription_category, $event);
+    $event_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_by_category_and_event($subscription_category, $ft_event);
+    $event->fusionticket_subscription_category_id = $event_category->id;
+    $save_event = TRUE;
+  }
+  if ($save_event)
+  {
+    CRM_BoxOffice_BAO_Event::save_extended_fields($event);
+  }
 }

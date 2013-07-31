@@ -37,4 +37,21 @@ EOS;
     $result->fetch();
     return $result->subscription_max_uses; 
   }
+
+  static function save_extended_fields($event)
+  {
+    $fusionticket_general_admission_category_id = CRM_BoxOffice_Utils::escape($event->fusionticket_general_admission_category_id, 'Integer');
+    $fusionticket_subscription_category_id = CRM_BoxOffice_Utils::escape($event->fusionticket_subscription_category_id, 'Integer');
+    $sql = <<<EOS
+      UPDATE
+	civicrm_event
+      SET
+	fusionticket_general_admission_category_id = $fusionticket_general_admission_category_id,
+	fusionticket_subscription_category_id = $fusionticket_subscription_category_id
+      WHERE
+	id = %1
+EOS;
+    dd($sql, 'foo');
+    CRM_Core_DAO::executeQuery($sql, array(1 => array($event->id, 'Integer')));
+  }
 }

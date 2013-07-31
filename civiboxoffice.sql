@@ -50,3 +50,5 @@ CREATE TABLE `civiboxoffice_price_set_associations` (
 ALTER TABLE `civicrm_event` ADD COLUMN `subscription_max_uses` INT UNSIGNED;
 ALTER TABLE `civicrm_participant` ADD COLUMN `subscription_participant_id` INT UNSIGNED;
 ALTER TABLE `civicrm_participant` ADD CONSTRAINT FK_civicrm_event_subscription_participant_id FOREIGN KEY (`subscription_participant_id`) REFERENCES `civicrm_participant` (`id`);
+ALTER TABLE `civicrm_event` ADD COLUMN `fusionticket_general_admission_category_id` INT;
+ALTER TABLE `civicrm_event` ADD COLUMN `fusionticket_subscription_category_id` INT;
