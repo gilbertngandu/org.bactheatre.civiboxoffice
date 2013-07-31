@@ -90,7 +90,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
       $subscription_participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_email_address_and_allowed_event_id($subscription_email_address, $allowed_event_id);
       if (empty($subscription_participants))
       {
-	$error_messages[] = "Unable to find any subscriptions for '$subscription_email_address'.";
+	$error_messages[] = "We are sorry. That email address does not match any Flex Passes. If you think you are getting this message in error, please email tickets@bactheatre.org or call 510-296-4433.";
       }
     }
     if (empty($error_messages))

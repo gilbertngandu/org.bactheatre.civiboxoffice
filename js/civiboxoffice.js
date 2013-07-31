@@ -1,3 +1,15 @@
+function pluralize(count, singular, plural)
+{
+  if (count == 1)
+  {
+    return singular;
+  }
+  else
+  {
+    return plural;
+  }
+}
+
 function totalTickets() {
   var totalfee       = 0;
   var totaltickets   = 0;
@@ -223,7 +235,7 @@ function totalTickets() {
     present_choices: function()
     {
       this.subscription_choice_area.html('');
-      this.subscription_choice_area.html('<label for="subscription-selector">You have more than one subscription. Please select the subscription you wish to use:</label><select id="subscription-selector">\n</select>');
+      this.subscription_choice_area.html('<label for="subscription-selector">Congratulations! We have found your Flex Passes. Please select the one you wish to use.</label><select id="subscription-selector">\n</select>');
       subscription_selector = $('#subscription-selector');
       subscription_selector.append('<option value=""> - I don\'t want to use a subscription. - </option>');
       $(this.subscriptions).each(function(index)
@@ -288,12 +300,8 @@ function totalTickets() {
       display(totalfee);
       $('#payment_information').hide();
       this.subscription_participant_id.val(subscription.participant_id);
-      var uses_info = subscription.uses + ' times';
-      if (subscription.uses == 1)
-      {
-	uses_info = subscription.uses + ' time';
-      }
-      this.add_message("The ticket quantities below have been updated according to your Flex Pass. Please select your seats below. You have used your flex pass " + uses_info + ' out of ' + subscription.max_uses + ' maximum. This purchase will bring your usage to ' + (subscription.uses + 1) + '.');
+      uses_remaining = subscription.max_uses - subscription.uses;
+      this.add_message("Congratulations! We have found your Flex Pass. Please select your seats below. You have " + uses_remaining + " " + pluralize(uses_remaining, 'show', 'shows') + ' left on your flex pass.');
     },
 
     request_seatmap: function(category_type)
