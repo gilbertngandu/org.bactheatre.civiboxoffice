@@ -139,11 +139,13 @@ function civiboxoffice_build_seat_selector($formName, &$form, $category_type) {
   }
 
   $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, $category_type);
-  $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
-  CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
-  $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
-  $form->assign('place_map_category', $place_map_category);
-  $form->assign('seatMap', $seatmap);
+  if ($place_map_category != NULL) {
+    $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
+    CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
+    $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
+    $form->assign('place_map_category', $place_map_category);
+    $form->assign('seatMap', $seatmap);
+  }
 }
 
 function civiboxoffice_event_allows_subscriptions($event_id) {
