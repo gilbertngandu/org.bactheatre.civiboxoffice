@@ -59,6 +59,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
       if ($subscription_line_item != NULL)
       {
 	$subscription_price_field['quantity'] = $subscription_line_item->qty;
+	$subscription_price_field['subscription_participant_id'] = $subscription_line_item->entity_id;
       }
       $subscription_price_fields[] = $subscription_price_field;
     }

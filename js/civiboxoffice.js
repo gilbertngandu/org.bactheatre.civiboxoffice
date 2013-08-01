@@ -108,10 +108,10 @@ function totalTickets() {
     find_price_field_data_by_price_field_id: function(id)
     {
       var found_price_field_data = null;
-
+      var subscription = this;
       $(this.price_fields).each(function()
       {
-	if ('price_' + this['id'] == id) 
+	if ('price_' + this['id'] == id && this['subscription_participant_id'] == subscription.participant_id) 
 	{
 	  found_price_field_data = this;	  
 	}
