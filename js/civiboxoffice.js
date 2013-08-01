@@ -277,6 +277,7 @@ function totalTickets() {
 	var price_field_data = subscription.find_price_field_data_by_price_field_id(price_field.attr('id'));
 	if (price_field_data == null)
 	{
+	  price_field.val(null);
 	  price_field.prop('disabled', true);
 	}
 	else
