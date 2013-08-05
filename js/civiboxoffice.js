@@ -144,6 +144,7 @@ function totalTickets() {
   var SubscriptionManager = this.SubscriptionManager = function()
   {
     this.initialize();
+    this.lookup_subscription();
   };
 
   SubscriptionManager.prototype =

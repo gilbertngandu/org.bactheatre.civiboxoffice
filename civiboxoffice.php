@@ -147,7 +147,9 @@ function civiboxoffice_build_seat_selector($formName, &$form) {
     {
       CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $subscription_place_map_category);
     }
-    $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
+    $subscription_participant_id = $form->get('subscription_participant_id');
+    $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category_to_draw);
+    $form->assign('subscription_email_address', $form->get('subscription_email_address'));
     $form->assign('place_map_category', $place_map_category);
     $form->assign('seatMap', $seatmap);
   }
@@ -439,6 +441,7 @@ function civiboxoffice_record_subscription_usage($subscription_participant_id, $
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Register($formName, &$form) {
+  $form->set('subscription_email_address', $_POST['subscription_email_address']);
   $form->set('subscription_participant_id', $_POST['subscription_participant_id']);
   $subscription_participant_id = $form->get('subscription_participant_id');
   if ($subscription_participant_id != NULL) {
