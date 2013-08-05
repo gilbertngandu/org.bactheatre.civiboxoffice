@@ -118,7 +118,7 @@ function civiboxoffice_civicrm_buildForm($formName, &$form) {
   }
 }
 
-function civiboxoffice_build_seat_selector($formName, &$form, $category_type) {
+function civiboxoffice_build_seat_selector($formName, &$form) {
   if ($_POST) {
     return;
   }
@@ -138,10 +138,15 @@ function civiboxoffice_build_seat_selector($formName, &$form, $category_type) {
     throw new Exception("Couldn't find event with ID {$event_id} to setup seat selection.");
   }
 
-  $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, $category_type);
+  $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'general_admission');
   if ($place_map_category != NULL) {
     $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
     CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
+    $subscription_place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'subscription');
+    if ($subscription_place_map_category != NULL)
+    {
+      CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $subscription_place_map_category);
+    }
     $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
     $form->assign('place_map_category', $place_map_category);
     $form->assign('seatMap', $seatmap);
@@ -188,7 +193,7 @@ function civiboxoffice_add_subscription($form) {
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Register($formName, &$form) {
-  civiboxoffice_build_seat_selector($formName, $form, 'general_admission');
+  civiboxoffice_build_seat_selector($formName, $form);
   civiboxoffice_add_subscription($form);
 }
 
@@ -213,6 +218,8 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
   $subscription_participant_id = $form->get('subscription_participant_id');
   if ($subscription_participant_id != NULL) {
     $form->_values['event']['is_monetary'] = FALSE;
+    $form->assign('totalAmount', 0);
+    $form->set('totalAmount', 0);
   }
 }
 
@@ -255,7 +262,7 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ParticipantView($formNam
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Participant($formName, &$form) {
-  civiboxoffice_build_seat_selector($formName, $form, 'general_admission');
+  civiboxoffice_build_seat_selector($formName, $form);
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($formName, $form) {
@@ -433,6 +440,17 @@ function civiboxoffice_record_subscription_usage($subscription_participant_id, $
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Register($formName, &$form) {
   $form->set('subscription_participant_id', $_POST['subscription_participant_id']);
+  $subscription_participant_id = $form->get('subscription_participant_id');
+  if ($subscription_participant_id != NULL) {
+    $price_sets = $form->get('lineItem');
+    foreach ($price_sets as &$line_items) {
+      foreach ($line_items as &$line_item) {
+	$line_item['unit_price'] = 0;
+	$line_item['line_total'] = 0;
+      }
+    }
+    $form->set('lineItem', $price_sets);
+  }
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Confirm($formName, &$form) {

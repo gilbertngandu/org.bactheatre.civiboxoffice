@@ -174,6 +174,16 @@ function totalTickets() {
       price_fields.css('background-color', '');
       price_fields.val('');
       price_fields.parents('.crm-section').show();
+      price_fields.each(function(index)
+      {
+	var price_field = $(this);
+	label_field = $('label[for="' + price_field.attr('id') + '"]');
+	var orig_price_label = label_field.data('orig-price-label');
+	if (orig_price_label != null)
+	{
+	  label_field.html(orig_price_label);
+	}
+      });
     },
 
     clear_messages: function()
@@ -201,10 +211,11 @@ function totalTickets() {
 
     lookup_subscription: function()
     {
+      this.clear();
       if (this.subscription_email_address.val().trim() == '') {
+	this.request_seatmap('general_admission');
 	return;
       }
-      this.clear();
       data = {
 	'allowed_event_id': event_id,
 	'qfKey': $('input[name="qfKey"]').val(),
@@ -272,6 +283,7 @@ function totalTickets() {
     {
       var subscription = this.current_subscription;
       var price_fields = $('#priceset input');
+      var price_regex = /^(.*)(\$.*)$/;
       price_fields.each(function()
       {
 	var price_field = $(this);
@@ -292,6 +304,11 @@ function totalTickets() {
 	  {
 	    price_field.val(price_field_data['quantity']);
 	  }
+	  label_field = $('label[for="' + price_field.attr('id') + '"]');
+	  label_field.data('orig-price-label', label_field.html());
+	  console.log(label_field.html());
+	  console.log(label_field.data('orig-price-label'));
+	  label_field.html(label_field.html().replace(/-.*\$.*$/, ''));
 	  price_field.prop('readonly', true);
 	  price_field.css('background-color', 'rgb(235, 235, 228)');
 	  eval( 'var option = ' + price_field.attr('price') );
