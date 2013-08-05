@@ -173,6 +173,7 @@ function totalTickets() {
       price_fields.prop('readonly', false);
       price_fields.css('background-color', '');
       price_fields.val('');
+      price_fields.parents('.crm-section').show();
     },
 
     clear_messages: function()
@@ -279,6 +280,7 @@ function totalTickets() {
 	{
 	  price_field.val(null);
 	  price_field.prop('disabled', true);
+	  price_field.parentsUntil('#priceset', '.crm-section').hide();
 	}
 	else
 	{
