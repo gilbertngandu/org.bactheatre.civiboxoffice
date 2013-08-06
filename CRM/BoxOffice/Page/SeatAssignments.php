@@ -23,7 +23,7 @@ LEFT JOIN
 LEFT JOIN
   PlaceMapZone ON (Seat.seat_zone_id = PlaceMapZone.pmz_id)
 WHERE
-  civicrm_event.id = 527
+  civicrm_event.id = %1
 ORDER BY
   Seat.seat_row_nr,
   Seat.seat_nr,
