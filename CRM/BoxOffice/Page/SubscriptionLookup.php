@@ -12,20 +12,14 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     }
     foreach ($subscription_line_items as $subscription_line_item) 
     {
-      $found_line_item = FALSE;
       foreach ($associated_price_objects as &$associated_price_pair)
       {
 	$price_set_association = $associated_price_pair[0];
 	if ($subscription_line_item->price_field_id == $price_set_association->subscription_price_field_id)
 	{
 	  $associated_price_pair[1] = $subscription_line_item;
-	  $found_line_item = TRUE;
 	  break;
 	}
-      }
-      if (!$found_line_item) 
-      {
-	$error_messages[] = "Couldn't find a price field in this event that has been associated with the subscription event price field with ID {$subscription_line_item->price_field_id}.";
       }
     }
     return array($associated_price_objects, $error_messages);
