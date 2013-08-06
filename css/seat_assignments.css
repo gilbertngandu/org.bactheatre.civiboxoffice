@@ -1,0 +1,16 @@
+table
+{
+  border: solid thin;
+  border-collapse: collapse;
+}
+
+td,th
+{
+  border: solid thin;
+  padding: 5px;
+}
+
+th
+{
+  text-align: left;
+}

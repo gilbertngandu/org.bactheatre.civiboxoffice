@@ -11,4 +11,9 @@
     <access_callback>1</access_callback>
     <is_public>true</is_public>
   </item>
+  <item>
+    <path>civicrm/civiboxoffice/seat_assignments</path>
+    <title>Seat Assignments</title>
+    <page_callback>CRM_BoxOffice_Page_SeatAssignments::report</page_callback>
+  </item>
 </menu>
