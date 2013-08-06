@@ -241,6 +241,7 @@ function totalTickets() {
       }
       if (data['error']) {
 	this.add_error(data['error_message']);
+	this.request_seatmap('general_admission');
       } else {
 	this.update_subscriptions_data(data);
       }

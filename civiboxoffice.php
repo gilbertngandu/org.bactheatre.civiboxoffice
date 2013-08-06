@@ -138,15 +138,16 @@ function civiboxoffice_build_seat_selector($formName, &$form) {
     throw new Exception("Couldn't find event with ID {$event_id} to setup seat selection.");
   }
 
+  $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
   $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'general_admission');
   if ($place_map_category != NULL) {
-    $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
     CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
-    $subscription_place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'subscription');
-    if ($subscription_place_map_category != NULL)
-    {
-      CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $subscription_place_map_category);
-    }
+  }
+  $subscription_place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'subscription');
+  if ($subscription_place_map_category != NULL) {
+    CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $subscription_place_map_category);
+  }
+  if ($place_map_category != NULL) {
     $subscription_participant_id = $form->get('subscription_participant_id');
     $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category_to_draw);
     $form->assign('subscription_email_address', $form->get('subscription_email_address'));
@@ -349,6 +350,8 @@ function civiboxoffice_civicrm_validateForm($formName, &$fields, &$files, &$form
 }
 
 function civiboxoffice_civicrm_validateForm_CRM_Event_Form_Registration_Register($formName, &$fields, &$files, &$form, &$errors) {
+  $form->set('subscription_email_address', $_POST['subscription_email_address']);
+  $form->set('subscription_participant_id', $_POST['subscription_participant_id']);
   civiboxoffice_validate_seats($formName, $fields, $files, $form, $errors);
 }
 
@@ -441,8 +444,6 @@ function civiboxoffice_record_subscription_usage($subscription_participant_id, $
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Register($formName, &$form) {
-  $form->set('subscription_email_address', $_POST['subscription_email_address']);
-  $form->set('subscription_participant_id', $_POST['subscription_participant_id']);
   $subscription_participant_id = $form->get('subscription_participant_id');
   if ($subscription_participant_id != NULL) {
     $price_sets = $form->get('lineItem');
