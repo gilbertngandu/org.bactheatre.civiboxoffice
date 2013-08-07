@@ -308,8 +308,6 @@ function totalTickets() {
 	  }
 	  label_field = $('label[for="' + price_field.attr('id') + '"]');
 	  label_field.data('orig-price-label', label_field.html());
-	  console.log(label_field.html());
-	  console.log(label_field.data('orig-price-label'));
 	  label_field.html(label_field.html().replace(/-.*\$.*$/, ''));
 	  price_field.prop('readonly', true);
 	  price_field.css('background-color', 'rgb(235, 235, 228)');
@@ -386,7 +384,14 @@ function totalTickets() {
       if (this.subscriptions.length == 1)
       {
 	this.current_subscription = this.subscriptions[0];
-	this.set_fields();
+	if (this.current_subscription.uses > this.current_subscription.max_uses)
+	{
+	  this.add_error("You have already used your Flex Pass " + this.current_subscription.uses + " out of " + this.current_subscription.max_uses + " times so you cannot use it any more.");
+	}
+	else
+	{
+	  this.set_fields();
+	}
       }
       else
       {
