@@ -35,6 +35,8 @@ class CRM_BoxOffice_BAO_Participant
 	civiboxoffice_subscription_allowances.allowed_event_id = %2
       AND
 	civicrm_email.email = %3
+      AND
+	civicrm_email.is_primary
 EOS;
     $participants = array();
     $dao = CRM_Core_DAO::executeQuery($sql, $params, 'CRM_Event_BAO_Participant');
