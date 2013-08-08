@@ -38,7 +38,10 @@
  * This this will invalided all given passwords in the system.
  */
 
-error_reporting(0);
+ini_set('session.save_handler', 'files');
+session_save_path('/home/actarts/session');
+//error_reporting(0);
+ini_set('display_errors', '1');
 
 if (!defined('ft_check')) {die('System intrusion ');}
   header('Content-Type: text/html; charset=utf-8');
