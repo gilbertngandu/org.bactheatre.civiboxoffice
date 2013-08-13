@@ -488,6 +488,45 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName,
   civiboxoffice_reserve_seats($formName, $form);
 }
 
+function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_EventInfo($formName, &$form) {
+  ft_security();
+  $event = new CRM_Event_BAO_Event();
+  $event->id = $form->get('id');
+  if (!$event->find(TRUE))
+  {
+    throw new Exception("Couldn't find event $id when trying to update fusion ticket fields.");
+  }
+
+  $allowed_subscription_ids = CRM_Utils_Array::value('allowed_subscription_ids', $form->_submitValues, array());
+  CRM_BoxOffice_BAO_SubscriptionAllowance::update_subscription_events_for_allowed_event_id($event->id, $allowed_subscription_ids);
+  $subscription_max_uses = CRM_Utils_Array::value('subscription_max_uses', $form->_submitValues);
+  CRM_BoxOffice_BAO_Event::set_subscription_max_uses($event->id, $subscription_max_uses);
+  $general_admission_category_id = CRM_Utils_Array::value('general_admission_category_id', $form->_submitValues);
+  $subscription_category_id = CRM_Utils_Array::value('subscription_category_id', $form->_submitValues);
+  $save_event = FALSE;
+  if ($general_admission_category_id != NULL && $general_admission_category_id != 0)
+  {
+    $general_admission_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($general_admission_category_id);
+    $ft_event = CRM_BoxOffice_FusionTicket_Event::create_from_category_and_civicrm_event($general_admission_category, $event);
+    $event_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_by_category_and_event($general_admission_category, $ft_event);
+    $event->fusionticket_general_admission_category_id = $event_category->id;
+    $save_event = TRUE;
+  }
+  
+  if ($subscription_category_id != NULL && $subscription_category_id != 0)
+  {
+    $subscription_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($subscription_category_id);
+    $ft_event = CRM_BoxOffice_FusionTicket_Event::create_from_category_and_civicrm_event($subscription_category, $event);
+    $event_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_by_category_and_event($subscription_category, $ft_event);
+    $event->fusionticket_subscription_category_id = $event_category->id;
+    $save_event = TRUE;
+  }
+  if ($save_event)
+  {
+    CRM_BoxOffice_BAO_Event::save_extended_fields($event);
+  }
+} 
+
 function civiboxoffice_civicrm_pre($op, $objectName, $id, &$params) {
   $hook_name = "civiboxoffice_civicrm_pre_{$objectName}_{$op}";
   if (function_exists($hook_name)) {
@@ -547,55 +586,5 @@ function civiboxoffice_civicrm_post($op, $objectName, $id, &$params) {
   }
 }
 
-function civiboxoffice_civicrm_post_Event_create($ob, $objectName, $id, &$params) {
-  civiboxoffice_create_fusionticket_event($id, $params);
-}
-
-function civiboxoffice_civicrm_post_Event_edit($ob, $objectName, $id, &$params) {
-  civiboxoffice_create_fusionticket_event($id, $params);
-}
-
 function civiboxoffice_create_fusionticket_event($id, &$params) {
-  if (isset($_POST['allowed_subscription_ids'])) {
-    $allowed_subscription_ids = $_POST['allowed_subscription_ids'];
-  } else {
-    $allowed_subscription_ids = array();
-  }
-  CRM_BoxOffice_BAO_SubscriptionAllowance::update_subscription_events_for_allowed_event_id($id, $allowed_subscription_ids);
-  if ($_POST) {
-    CRM_BoxOffice_BAO_Event::set_subscription_max_uses($id, $_POST['subscription_max_uses']);
-  }
-
-  $event = new CRM_Event_BAO_Event();
-  $event->id = $id;
-  if (!$event->find(TRUE))
-  {
-    throw new Exception("Couldn't find event $id when trying to update fusion ticket fields.");
-  }
-
-  ft_security();
-  $general_admission_category_id = $_POST['general_admission_category_id'];
-  $subscription_category_id = $_POST['subscription_category_id'];
-  $save_event = FALSE;
-  if ($general_admission_category_id != NULL && $general_admission_category_id != 0)
-  {
-    $general_admission_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($general_admission_category_id);
-    $ft_event = CRM_BoxOffice_FusionTicket_Event::create_from_category_and_civicrm_event($general_admission_category, $event);
-    $event_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_by_category_and_event($general_admission_category, $ft_event);
-    $event->fusionticket_general_admission_category_id = $event_category->id;
-    $save_event = TRUE;
-  }
-  
-  if ($subscription_category_id != NULL && $subscription_category_id != 0)
-  {
-    $subscription_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($subscription_category_id);
-    $ft_event = CRM_BoxOffice_FusionTicket_Event::create_from_category_and_civicrm_event($subscription_category, $event);
-    $event_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_by_category_and_event($subscription_category, $ft_event);
-    $event->fusionticket_subscription_category_id = $event_category->id;
-    $save_event = TRUE;
-  }
-  if ($save_event)
-  {
-    CRM_BoxOffice_BAO_Event::save_extended_fields($event);
-  }
 }
