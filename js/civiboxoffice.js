@@ -173,7 +173,7 @@ function totalTickets() {
       price_fields.prop('disabled', false);
       price_fields.prop('readonly', false);
       price_fields.css('background-color', '');
-      price_fields.val('');
+      price_fields.filter('[type=text]').val('');
       price_fields.parents('.crm-section').show();
       price_fields.each(function(index)
       {
@@ -292,9 +292,20 @@ function totalTickets() {
 	var price_field_data = subscription.find_price_field_data_by_price_field_id(price_field.attr('id'));
 	if (price_field_data == null)
 	{
-	  price_field.val(null);
-	  price_field.prop('disabled', true);
-	  price_field.parentsUntil('#priceset', '.crm-section').hide();
+	  console.log(price_field.attr('type'));
+	  if (price_field.attr('type') == 'radio')
+	  {
+	    if (price_field.data('amount') == '0')
+	    {
+	      price_field.prop('checked', true);
+	    }
+          }
+          else
+          {
+	    price_field.val(null);
+	    price_field.prop('disabled', true);
+          }
+          price_field.parentsUntil('#priceset', '.crm-section').hide();
 	}
 	else
 	{
