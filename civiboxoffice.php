@@ -220,13 +220,20 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
   }
   $subscription_participant_id = $form->get('subscription_participant_id');
   if ($subscription_participant_id != NULL) {
+    $subscription_participant = new CRM_Event_BAO_Participant();
+    $subscription_participant->id = $subscription_participant_id;
+    if (!$subscription_participant->find(TRUE))
+    {
+      throw new Exception("Unable to find subscription participant {$subscription_participant_id} to set contact id for flex pass usage.");
+    }
     $form->_values['event']['is_monetary'] = FALSE;
     $form->assign('totalAmount', 0);
     $form->set('totalAmount', 0);
     $params = $form->get('params');
     $params[0]['amount'] = 0;
     $params[0]['participant_source'] = "Flex Pass $subscription_participant_id Used On {$form->_values['event']['title']} ({$form->_values['event']['id']})" ;
-    $form->set('registerByID', $params[0]['contact_id']);
+    $params[0]['contact_id'] = $subscription_participant->contact_id;
+    $form->set('registerByID', $subscription_participant->contact_id);
     $form->set('params', $params);
     $form->_values['is_primary'] = FALSE;
   }
