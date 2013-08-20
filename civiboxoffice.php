@@ -172,6 +172,19 @@ function civiboxoffice_disable_payment_fields($form) {
   }
 }
 
+function civiboxoffice_disable_profile_fields($form) {
+  foreach ($form->_fields as $field_name => &$field) {
+    if ($field['groupTitle'] == 'Contact Information' && $field['is_required']) {
+      $field['is_required'] = FALSE;
+      foreach ($form->_required as $index => $field_name) {
+	if ($field_name == $field['name']) {
+	  unset($form->_required[$index]);
+	}
+      }
+    }
+  }
+}
+
 function civiboxoffice_add_subscription($form) {
   $event_id = $form->getVar('_eventId');
   if ($_POST) {
@@ -179,6 +192,7 @@ function civiboxoffice_add_subscription($form) {
         civiboxoffice_subscription_covers_all_costs($form)) 
     {
       civiboxoffice_disable_payment_fields($form);
+      civiboxoffice_disable_profile_fields($form);
     }
   } else {
     $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
@@ -220,6 +234,7 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
   }
   $subscription_participant_id = $form->get('subscription_participant_id');
   if ($subscription_participant_id != NULL) {
+    civiboxoffice_disable_profile_fields($form);
     $subscription_participant = new CRM_Event_BAO_Participant();
     $subscription_participant->id = $subscription_participant_id;
     if (!$subscription_participant->find(TRUE))
