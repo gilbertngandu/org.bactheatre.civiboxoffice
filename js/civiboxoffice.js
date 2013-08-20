@@ -170,6 +170,16 @@ function totalTickets() {
       $('#payment_information').show();
       $('.email-Primary-section').parent().show();
       $('.last_name-section').parent().show();
+      this.clear_price_fields();
+    },
+
+    clear_messages: function()
+    {
+      this.message_area.html('');
+    },
+
+    clear_price_fields: function()
+    {
       price_fields = $('#priceset input');
       price_fields.prop('disabled', false);
       price_fields.prop('readonly', false);
@@ -186,11 +196,6 @@ function totalTickets() {
 	  label_field.html(orig_price_label);
 	}
       });
-    },
-
-    clear_messages: function()
-    {
-      this.message_area.html('');
     },
 
     initialize: function()
@@ -293,7 +298,6 @@ function totalTickets() {
 	var price_field_data = subscription.find_price_field_data_by_price_field_id(price_field.attr('id'));
 	if (price_field_data == null)
 	{
-	  console.log(price_field.attr('type'));
 	  if (price_field.attr('type') == 'radio')
 	  {
 	    if (price_field.data('amount') == '0')
@@ -374,6 +378,7 @@ function totalTickets() {
     subscription_selected: function(event)
     {
       this.clear_messages();
+      this.clear_price_fields();
       var subscription_selector = $(event.target);
       var index = subscription_selector.val();
       if (index == '')
