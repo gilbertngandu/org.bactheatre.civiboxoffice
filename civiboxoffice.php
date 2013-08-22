@@ -119,9 +119,6 @@ function civiboxoffice_civicrm_buildForm($formName, &$form) {
 }
 
 function civiboxoffice_build_seat_selector($formName, &$form) {
-  if ($_POST) {
-    return;
-  }
   ft_security();
 
   CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/civiboxoffice.js');
@@ -392,17 +389,21 @@ function civiboxoffice_validate_seats($formName, &$fields, &$files, &$form, &$er
   // check submitted form for seat assignments
   if (array_key_exists('place', $submitvalues)) {
     $seats = array_values(array_filter($submitvalues['place']));
-    require_once('fusionticket/includes/classes/class.router.php');
-    require_once('fusionticket/includes/classes/model.seat.php');
+    if (empty($seats)) {
+      $errors['_qf_default'] = ts('You must select seats.');
+    } else {
+      require_once('fusionticket/includes/classes/class.router.php');
+      require_once('fusionticket/includes/classes/model.seat.php');
 
-    // mark selected seats as on-hold
-    // we will move them to reserved in postProcess
-    $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
-    $result = Seat::reservate($sid, $submitvalues['ft_category_event_id'], $submitvalues['ft_category_id'], $seats, $submitvalues['ft_category_numbering'], false, false);
+      // mark selected seats as on-hold
+      // we will move them to reserved in postProcess
+      $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
+      $result = Seat::reservate($sid, $submitvalues['ft_category_event_id'], $submitvalues['ft_category_id'], $seats, $submitvalues['ft_category_numbering'], false, false);
 
-    if (!$result) {
-      // if we couldn't reserve seats, set error on form
-      $errors['_qf_default'] = ts('One or more of the seats you selected became unavailable.  Please make an alternate selection.');
+      if (!$result) {
+	// if we couldn't reserve seats, set error on form
+	$errors['_qf_default'] = ts('One or more of the seats you selected became unavailable.  Please make an alternate selection.');
+      }
     }
   }
 }

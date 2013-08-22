@@ -206,6 +206,7 @@ function totalTickets() {
       $('#subscription-section').insertBefore('#priceset');
       this.subscription_choice_area = $('#subscription-choice-area');
       this.subscription_email_address = $('#subscription_email_address');
+      this.original_subscription_email_address = this.subscription_email_address.val().trim();
       this.subscription_email_address.on('blur', $.proxy(this.lookup_subscription, this));
       this.subscription_participant_id = $('#subscription_participant_id');
     },
@@ -217,11 +218,14 @@ function totalTickets() {
 
     lookup_subscription: function()
     {
-      this.clear();
+      if (this.subscription_email_address.val().trim() != this.original_subscription_email_address) {
+	this.clear();
+      }
       if (this.subscription_email_address.val().trim() == '') {
 	this.request_seatmap('general_admission');
 	return;
       }
+      this.original_subscription_email_address = this.subscription_email_address.val().trim();
       data = {
 	'allowed_event_id': event_id,
 	'qfKey': $('input[name="qfKey"]').val(),
