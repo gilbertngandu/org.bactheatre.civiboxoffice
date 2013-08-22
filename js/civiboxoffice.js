@@ -169,7 +169,6 @@ function totalTickets() {
       $('#subscription_participant_id').val('');
       $('#payment_information').show();
       $('.email-Primary-section').parent().show();
-      $('.last_name-section').parent().show();
       this.clear_price_fields();
     },
 
@@ -337,7 +336,6 @@ function totalTickets() {
       display(totalfee);
       $('#payment_information').hide();
       $('.email-Primary-section').parent().hide();
-      $('.last_name-section').parent().hide();
       $('#email-Primary').val(this.subscription_email_address.val());
       this.subscription_participant_id.val(subscription.participant_id);
       uses_remaining = subscription.max_uses - subscription.uses;
