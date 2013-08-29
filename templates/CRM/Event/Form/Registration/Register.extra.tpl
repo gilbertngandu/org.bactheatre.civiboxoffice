@@ -17,7 +17,17 @@
 	</div>
 	<div class="content">
 	  <input type="text" id="subscription_email_address" name="subscription_email_address" value="{$subscription_email_address}">
-	  <input type="hidden" id="subscription_participant_id" name="subscription_participant_id">
+          <input type="hidden" id="subscription_participant_id" name="subscription_participant_id">
+          {literal}
+            <style type="text/css">
+              #crm-container input[type=button].fake-button:active
+              {
+                background: #70716B url(/sites/all/modules/civicrm/i/crm-button-bg.gif/i/crm-button-bg.gif);
+                background-position: 0px -25px;
+              }
+            </style>
+          {/literal}
+          <input class="fake-button" type="button" value="Submit">
 	</div>
 	<div id="subscription-choice-area" class="content">
 	</div>
