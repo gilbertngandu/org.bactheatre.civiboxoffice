@@ -8,7 +8,6 @@
   var rows = $('#event_status_id tr div.crm-event-participants ul.panel');
   var id_matcher = /.*_(\d+)$/;
   var link_template = $('.seat-assignment-link-template');
-  console.log(link_template.html());
 
   rows.each(function()
   {
@@ -17,7 +16,6 @@
     var new_item = link_template.clone();
     new_item.removeClass('seat-assignment-link-template');
     new_item_link = new_item.children('a');
-    console.log(new_item_link.attr('href') + '=' + event_id);
     new_item_link.attr('href', new_item_link.attr('href') + '=' + event_id);
     new_item.show();
     $(this).append(new_item);
