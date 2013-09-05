@@ -98,7 +98,7 @@ class Seat  Extends Model {
   
   	$query="SELECT Seat.seat_id, Seat.seat_user_id, Seat.seat_order_id, Seat.seat_ts, 
   			       Seat.seat_sid, Seat.seat_price, Seat.seat_discount_id, Seat.seat_code, 
-  			       Seat.seat_status, Seat.seat_row_nr, Seat.seat_nr, PlaceMapZone.pmz_name, Seat.seat_pmp_id
+  			       Seat.seat_status, Seat.seat_row_nr, Seat.seat_nr, PlaceMapZone.pmz_name, Seat.seat_pmp_id, Seat.seat_category_id, Seat.seat_event_id
             from Seat
   			LEFT OUTER JOIN PlaceMapZone
   			ON Seat.seat_zone_id = PlaceMapZone.pmz_id
@@ -352,7 +352,7 @@ class Seat  Extends Model {
     if(!ShopDB::begin('cancel seats')){
       return FALSE;
     }
-
+    
     foreach($seats as $seat){
       $query="UPDATE `Seat` set seat_status='free',
             		seat_ts=NULL,
@@ -365,7 +365,7 @@ class Seat  Extends Model {
               where seat_id="._esc($seat['seat_id'])."
   	          and seat_event_id="._esc($seat['event_id'])."
 	            and seat_category_id="._esc($seat['category_id']);
-    //echo "<div class=info>$query</div>";
+                    //echo "<div class=info>$query</div>";
 
       if(!ShopDB::query($query)){ //echo a;
         ShopDB::rollback('cant_cancel_seat_1');

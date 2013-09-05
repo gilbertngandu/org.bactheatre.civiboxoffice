@@ -133,6 +133,18 @@ EOS;
     return $place_map_category;
   } 
 
+  static function find_for_civicrm_event_id_and_category_type($event_id, $category_type)
+  {
+    $event = new CRM_Event_BAO_Event();
+    $event->id = $event_id;
+    if (!$event->find(TRUE))
+    {
+      throw new Exception("Couldn't find event with id {$event_id} in order to find place map category.");
+    }
+    return static::find_for_civicrm_event_and_category_type($event, $category_type);
+  }
+
+
   static function find_and_include_pm_ort_id($category_id)
   {
     $query =<<<EOS

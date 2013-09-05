@@ -118,39 +118,18 @@ function civiboxoffice_civicrm_buildForm($formName, &$form) {
   }
 }
 
-function civiboxoffice_build_seat_selector($formName, &$form) {
-  ft_security();
-
-  CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/civiboxoffice.js');
-
-  $event_id = $form->getVar('_eventId');
-  $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
-  if (!isset($event_id) || !isset($snippet)) {
-    return;
-  }
-
+function civiboxoffice_build_seat_selector($event_id, $form, $place_map_category) {
   $event = new CRM_Event_BAO_Event();
   $event->id = $event_id;
   if (!$event->find(TRUE)) {
     throw new Exception("Couldn't find event with ID {$event_id} to setup seat selection.");
   }
-
   $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
-  $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'general_admission');
-  if ($place_map_category != NULL) {
-    CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
-  }
-  $subscription_place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($event, 'subscription');
-  if ($subscription_place_map_category != NULL) {
-    CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $subscription_place_map_category);
-  }
-  if ($place_map_category != NULL) {
-    $subscription_participant_id = $form->get('subscription_participant_id');
-    $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category_to_draw);
-    $form->assign('subscription_email_address', $form->get('subscription_email_address'));
-    $form->assign('place_map_category', $place_map_category);
-    $form->assign('seatMap', $seatmap);
-  }
+  CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid);
+  $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
+  $form->assign('place_map_category', $place_map_category);
+  $form->assign('seatMap', $seatmap);
+  $form->assign('event_id', $event_id);
 }
 
 function civiboxoffice_event_allows_subscriptions($event_id) {
@@ -206,8 +185,18 @@ function civiboxoffice_add_subscription($form) {
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Register($formName, &$form) {
-  civiboxoffice_build_seat_selector($formName, $form);
+  CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/civiboxoffice.js');
+  ft_security();
   civiboxoffice_add_subscription($form);
+  $event_id = $form->getVar('_eventId');
+  $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
+  if (!isset($event_id) || !isset($snippet)) {
+    return;
+  }
+  $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_id_and_category_type($event_id, 'general_admission');
+  $subscription_participant_id = $form->get('subscription_participant_id');
+  $form->assign('subscription_email_address', $form->get('subscription_email_address'));
+  civiboxoffice_build_seat_selector($event_id, $form, $place_map_category);
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($formName, &$form) {
@@ -288,7 +277,40 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ParticipantView($formNam
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Participant($formName, &$form) {
-  civiboxoffice_build_seat_selector($formName, $form);
+  ft_security();
+  $snippet = CRM_Utils_Array::value('snippet', $_REQUEST);
+  if ($snippet != NULL) {
+    return;
+  }
+  civiboxoffice_assign_seat_information($formName, $form);
+  $participant_id = $form->_id;
+  $participant = new CRM_Event_BAO_Participant();
+  $participant->id = $participant_id;
+  if (!$participant->find(TRUE)) {
+    throw new Exception("Couldn't find partcipant with ID {$participant->id} to show seat map.");
+  }
+  $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($form->controller->_key);
+  $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_id_and_category_type($participant->event_id, 'general_admission');
+  $form->assign('place_map_category', $place_map_category);
+  $subscription_place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_id_and_category_type($participant->event_id, 'subscription');
+  $form->assign('subscription_place_map_category', $subscription_place_map_category);
+  if ($place_map_category == NULL)
+  {
+    $place_map_category = $subscription_place_map_category;
+  }
+  if ($place_map_category != NULL)
+  {
+    CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/civiboxoffice.js');
+    $event = new CRM_Event_BAO_Event();
+    $event->id = $participant->event_id;
+    if (!$event->find(TRUE)) {
+      throw new Exception("Couldn't find event with ID {$event_id} to setup seat selection.");
+    }
+    $seatmap = CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
+    $form->assign('place_map_category', $place_map_category);
+    $form->assign('seatMap', $seatmap);
+    $form->assign('event_id', $event->id);
+  }
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($formName, $form) {
@@ -379,7 +401,27 @@ function civiboxoffice_civicrm_validateForm_CRM_Event_Form_Registration_Register
 }
 
 function civiboxoffice_civicrm_validateForm_CRM_Event_Form_Participant($formName, &$fields, &$files, &$form, &$errors) {
-  civiboxoffice_validate_seats($formName, $fields, $files, $form, $errors);
+  $submitted_values = $form->getVar('_submitValues');
+  if (array_key_exists('place', $submitted_values)) {
+    $submitted_seats = array_values(array_filter($submitted_values['place']));
+    $num_seats_selected = count($submitted_seats);
+    if ($num_seats_selected > 0) {
+      ft_security();
+      $participant_id = $form->_id;
+      $participant = new CRM_Event_BAO_Participant();
+      $participant->id = $participant_id;
+      if (!$participant->find(TRUE))
+      {
+        throw new Exception("Unable to find participant with id {$participant_id} in order to validate seat selection.");
+      }
+      $num_tickets_for_participant = CRM_Event_BAO_Event::eventTotalSeats($participant->event_id, "participant.id = {$participant->id}");
+
+      if ($num_seats_selected != $num_tickets_for_participant) {
+        $errors['_qf_default'] = ts("You have chosen {$num_seats_selected} seats, but this registration has {$num_tickets_for_participant} tickets.");
+        return;
+      }
+    }
+  }
 }
 
 function civiboxoffice_validate_seats($formName, &$fields, &$files, &$form, &$errors) {
@@ -499,7 +541,26 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Registration_Confirm($
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName, &$form) {
-  civiboxoffice_reserve_seats($formName, $form);
+  ft_security();
+  $submitted_values = $form->getVar('_submitValues');
+  if (array_key_exists('place', $submitted_values)) {
+    $participant_id = $form->getVar('_id');
+    $submitted_seats = array_values(array_filter($submitted_values['place']));
+    if (count($submitted_seats) > 0) {
+      CRM_BoxOffice_FusionTicket_Seat::cancel_for_order($participant_id);
+      $result = Seat::reservate($participant_id, $submitted_values['ft_category_event_id'], $submitted_values['ft_category_id'], $submitted_seats, $submitted_values['ft_category_numbering'], false, false);
+      if (!$result) {
+        throw new Exception("There was a problem reserving the seats selected. " . print_r($seats, TRUE));
+      }
+      $seats = Seat::loadAllSid($participant_id);
+      foreach ($seats as $seat) {
+        $seat->seat_order_id = $participant_id;
+        if (!$seat->save()) {
+          throw new Exception("There was a problem saving a seat to update order {$participant_id}. " . print_r($seat, TRUE));
+        }
+      }
+    }
+  }
 }
 
 function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_EventInfo($formName, &$form) {

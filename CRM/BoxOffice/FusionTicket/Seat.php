@@ -2,30 +2,37 @@
 
 class CRM_BoxOffice_FusionTicket_Seat
 {
-  static function cancel_for_sid($sid, $place_map_category)
+  static function cancel_for_sid($sid)
   {
     $seats = Seat::loadAllSid($sid);
-    if ($seats) 
+    static::cancel_seats($seats, Seat::STATUS_HOLD);
+  }
+
+  static function cancel_for_order($order_id)
+  {
+    $seats = Seat::loadAllOrder($order_id);
+    static::cancel_seats($seats, Seat::STATUS_ORDERED);
+  }
+
+  static function cancel_seats($seats, $expected_status)
+  {
+    $staleseats = array();
+    foreach ($seats as $seatid => $seat) 
     {
-      $staleseats = Array();
-      foreach ($seats as $seatid => $seat) 
+      if (!strcmp($seat->seat_status, $expected_status)) 
       {
-	if (! strcmp($seat->seat_status, Seat::STATUS_HOLD)) 
-	{
-	  $staleseats[$seatid] = array
-	  (
-	    'event_id' => $place_map_category->category_event_id,
-	    'category_id' => $place_map_category->category_id,
-	    'pmp_id' => $place_map_category->category_pmp_id,
-	    'seat_id' => $seat->seat_id,
-	  );
-	}
-      }
-      if ($staleseats) {
-	Seat::cancel($staleseats, 0);
+        $staleseats[$seatid] = array
+        (
+          'event_id' => $seat->seat_event_id,
+          'category_id' => $seat->seat_category_id,
+          'pmp_id' => $seat->seat_pmp_id,
+          'seat_id' => $seat->seat_id,
+        );
       }
     }
-    // fusionticket housekeeping to free abandoned seat selections
+    if ($staleseats) {
+      Seat::cancel($staleseats, 0);
+    }
     check_system();
   }
 

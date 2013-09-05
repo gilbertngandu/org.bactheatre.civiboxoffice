@@ -1,6 +1,10 @@
 {if $seatMap}
-  <div id="seatmapdefault" style="display: none;">
-    {$seatMap} 
+  <div id="seat-map-staging-area" style="display: none;">
+    <div id="seat-map-section">
+      <div id="seat-map">
+        {$seatMap}
+      </div>
+    </div>
   </div>
 {/if}
 {if $add_subscription_section}

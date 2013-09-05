@@ -98,6 +98,109 @@ function totalTickets() {
 {
   $ = this.cj;
 
+
+  var NotificationHandler = function()
+  {
+    this.initialize();
+  }
+
+  NotificationHandler.prototype =
+  {
+    clear_messages: function()
+    {
+      this.message_area.html('');
+    },
+
+    initialize: function()
+    {
+      this.message_area = $('#subscription-messages');
+    },
+
+    add_error: function(message)
+    {
+      var message_html = "<div class=\"red\">\n" + message + "\n</div>\n";
+      this.message_area.append(message_html);
+    },
+
+    add_message: function(message)
+    {
+      var message_html = "<div>\n" + message + "\n</div>\n";
+      this.message_area.append(message_html);
+    }
+  }
+
+  var SeatMapManager = function()
+  {
+    this.initialize();
+  }
+
+  SeatMapManager.prototype =
+  {
+    initialize: function()
+    {
+      this.notification_handler = new NotificationHandler();
+      this.seat_map = $('#seat-map');
+      this.seat_map_selector = $('#seat-map-selector');
+      if (this.seat_map_selector.length > 0)
+      {
+        this.seat_map_selector.on('change', $.proxy(this.seat_map_selector_changed, this));
+      }
+    },
+
+    request_seatmap: function(category_type)
+    {
+      this.show_loading();
+      data =
+      {
+	'allowed_event_id': event_id,
+	'category_type': category_type,
+	'qfKey': $('input[name="qfKey"]').val(),
+      };
+      options =
+      {
+	'data': data,
+	'dataType': 'json',
+	'error': $.proxy(this.lookup_error, this),
+	'success': $.proxy(this.request_seatmap_success, this),
+	'type': 'GET',
+	'url': '/civicrm/civiboxoffice/seat_map',
+      };
+      $.ajax(options);
+    },
+
+    request_seatmap_error: function(jq_xhr, error_type, exception)
+    {
+      this.notifications.add_error('There was an error requesting subscription information: ' + exception);
+    },
+
+    request_seatmap_success: function(data, text_status, jq_xhr)
+    {
+      if (data == null)
+      {
+	this.notifications.add_error("There was an error looking up your subscription information.");
+	return;
+      }
+      if (data['error'])
+      {
+	this.notifications.add_error(data['error_message']);
+      }
+      else 
+      {
+	this.seat_map.html(data['seatmap']);
+      }
+    },
+
+    seat_map_selector_changed: function(event)
+    {
+      this.request_seatmap(this.seat_map_selector.val());
+    },
+
+    show_loading: function()
+    {
+      this.seat_map.html('<h2>Loading seatmap. Please wait...</h2>');
+    }
+  }
+
   var Subscription = function(data)
   {
     this.initialize(data);
@@ -141,7 +244,7 @@ function totalTickets() {
     }
   };
 
-  var SubscriptionManager = this.SubscriptionManager = function()
+  var SubscriptionManager = function()
   {
     this.initialize();
     this.lookup_subscription();
@@ -149,22 +252,11 @@ function totalTickets() {
 
   SubscriptionManager.prototype =
   {
-    add_error: function(message)
-    {
-      var message_html = "<div class=\"red\">\n" + message + "\n</div>\n";
-      this.message_area.append(message_html);
-    },
-
-    add_message: function(message)
-    {
-      var message_html = "<div>\n" + message + "\n</div>\n";
-      this.message_area.append(message_html);
-    },
 
     clear: function()
     {
       this.clear_messages();
-      $('#seatmap').html('<h2>Loading seatmap. Please wait...</h2>');
+      this.seat_map_manager.show_loading();
       $('#subscription-choice-area').html('');
       $('#subscription_participant_id').val('');
       $('#payment_information').show();
@@ -174,7 +266,7 @@ function totalTickets() {
 
     clear_messages: function()
     {
-      this.message_area.html('');
+      this.notifications.clear_messages();
     },
 
     clear_price_fields: function()
@@ -202,36 +294,44 @@ function totalTickets() {
       if ($("#subscription-section-staging-area").length == 0) {
 	return;
       }
-      this.message_area = $('#subscription-messages');
       $('#subscription-section').insertBefore('#priceset');
       this.subscription_choice_area = $('#subscription-choice-area');
       this.subscription_email_address = $('#subscription_email_address');
       this.original_subscription_email_address = this.subscription_email_address.val().trim();
       this.subscription_email_address.on('blur', $.proxy(this.lookup_subscription, this));
       this.subscription_participant_id = $('#subscription_participant_id');
+      this.seat_map_manager = null;
+      this.notifications = new NotificationHandler();
     },
 
     lookup_error: function(jq_xhr, error_type, exception)
     {
-      this.add_error('There was an error requesting subscription information: ' + exception);
+      this.notifications.add_error('There was an error requesting subscription information: ' + exception);
     },
 
     lookup_subscription: function()
     {
-      if (this.subscription_email_address.val().trim() != this.original_subscription_email_address) {
+      if (this.subscription_email_address.val().trim() != this.original_subscription_email_address)
+      {
 	this.clear();
       }
-      if (this.subscription_email_address.val().trim() == '') {
-	this.request_seatmap('general_admission');
+      if (this.subscription_email_address.val().trim() == '')
+      {
+        if (this.seat_map_manager != null)
+        {
+	  this.seat_map_manager.request_seatmap('general_admission');
+        }
 	return;
       }
       this.original_subscription_email_address = this.subscription_email_address.val().trim();
-      data = {
+      data =
+      {
 	'allowed_event_id': event_id,
 	'qfKey': $('input[name="qfKey"]').val(),
 	'subscription_email_address': this.subscription_email_address.val(),
       };
-      options = {
+      options =
+      {
 	'data': data,
 	'dataType': 'json',
 	'error': $.proxy(this.lookup_error, this),
@@ -244,14 +344,21 @@ function totalTickets() {
 
     lookup_success: function(data, text_status, jq_xhr)
     {
-      if (data == null) {
-	this.add_error("There was an error looking up your subscription information.");
+      if (data == null)
+      {
+	this.notifications.add_error("There was an error looking up your subscription information.");
 	return;
       }
-      if (data['error']) {
-	this.add_error(data['error_message']);
-	this.request_seatmap('general_admission');
-      } else {
+      if (data['error'])
+      {
+	this.notifications.add_error(data['error_message']);
+        if (this.seat_map_manager != null)
+        {
+	  this.seat_map_manager.request_seatmap('general_admission');
+        }
+      }
+      else
+      {
 	this.update_subscriptions_data(data);
       }
     },
@@ -343,38 +450,7 @@ function totalTickets() {
       $('#email-Primary').val(this.subscription_email_address.val());
       this.subscription_participant_id.val(subscription.participant_id);
       uses_remaining = subscription.max_uses - subscription.uses;
-      this.add_message("Congratulations! We have found your Flex Pass. Please select your seats below. You have " + uses_remaining + " " + pluralize(uses_remaining, 'show', 'shows') + ' left on your flex pass.');
-    },
-
-    request_seatmap: function(category_type)
-    {
-      data = {
-	'allowed_event_id': event_id,
-	'category_type': category_type,
-	'qfKey': $('input[name="qfKey"]').val(),
-      };
-      options = {
-	'data': data,
-	'dataType': 'json',
-	'error': $.proxy(this.lookup_error, this),
-	'success': $.proxy(this.request_seatmap_success, this),
-	'type': 'GET',
-	'url': '/civicrm/civiboxoffice/seat_map',
-      };
-      $.ajax(options);
-    },
-
-    request_seatmap_success: function(data, text_status, jq_xhr)
-    {
-      if (data == null) {
-	this.add_error("There was an error looking up your subscription information.");
-	return;
-      }
-      if (data['error']) {
-	this.add_error(data['error_message']);
-      } else {
-	$('#seatmap').html(data['seatmap']);
-      }
+      this.notifications.add_message("Congratulations! We have found your Flex Pass. Please select your seats below. You have " + uses_remaining + " " + pluralize(uses_remaining, 'show', 'shows') + ' left on your flex pass.');
     },
 
     subscription_selected: function(event)
@@ -385,13 +461,19 @@ function totalTickets() {
       var index = subscription_selector.val();
       if (index == '')
       {
-	this.request_seatmap('general_admission');
+        if (this.seat_map_manager != null)
+        {
+	  this.seat_map_manager.request_seatmap('general_admission');
+        }
 	this.current_subscription = null;
 	this.clear();
       }
       else
       {
-	this.request_seatmap('subscription');
+        if (this.seat_map_manager != null)
+        {
+	  this.seat_map_manager.request_seatmap('subscription');
+        }
 	this.current_subscription = this.subscriptions[index];
 	this.set_fields();
       }
@@ -399,14 +481,17 @@ function totalTickets() {
 
     update_subscriptions_data: function(data)
     {
-      $('#seatmap').html(data['seatmap']);
+      if (this.seat_map_manager != null)
+      {
+        this.seat_map_manager.seat_map.html(data['seatmap']);
+      }
       this.set_data(data['subscriptions']);
       if (this.subscriptions.length == 1)
       {
 	this.current_subscription = this.subscriptions[0];
 	if (this.current_subscription.uses > this.current_subscription.max_uses)
 	{
-	  this.add_error("You have already used your Flex Pass " + this.current_subscription.uses + " out of " + this.current_subscription.max_uses + " times so you cannot use it any more.");
+	  this.notifications.add_error("You have already used your Flex Pass " + this.current_subscription.uses + " out of " + this.current_subscription.max_uses + " times so you cannot use it any more.");
 	}
 	else
 	{
@@ -419,27 +504,37 @@ function totalTickets() {
       }
     }
   };
+
+  this.CiviBoxOffice = {};
+  this.CiviBoxOffice.SeatMapManager = SeatMapManager;
+  this.CiviBoxOffice.SubscriptionManager = SubscriptionManager;
 }).call(this);
 
 cj(document).ready(function() {
-  new SubscriptionManager();
-  if (cj('#seatmapdefault').length == 0) {
-    return;
+  var subscription_manager = null;
+  if (cj('#subscription-section-staging-area').length > 0) {
+    subscription_manager = new CiviBoxOffice.SubscriptionManager();
   }
-  if (cj('div#seatmap').length == 0) {
-    cj('fieldset#priceset').after('<div id="seatmap"></div>');
+  if (cj('#seat-map-staging-area').length > 0) {
+    seat_map_manager = new CiviBoxOffice.SeatMapManager();
+    if (subscription_manager != null)
+    {
+      subscription_manager.seat_map_manager = seat_map_manager;
+    }
+    if (cj('fieldset#priceset').length > 0) {
+      cj('#seat-map-section').insertAfter('fieldset#priceset');
+      cj("form[name=Register]").submit(function() {
+        tickets = totalTickets();
+        seats = cj("#selectedseats").val();
+        if (tickets != seats) {
+          alert("Ticket quantity (" + tickets + ") does not match number of selected seats (" + seats + ").");
+          return false;
+        } else {
+          return true;
+        }
+      });
+    } else {
+      cj('#seat-map-section').insertBefore('#send_confirmation_receipt');
+    }
   }
-  cj('div#seatmap').html(cj('div#seatmapdefault').html());
-  cj('div#seatmapdefault').html('');
-  cj("form[name=Register]").submit(function() {
-    tickets = totalTickets();
-    seats = cj("#selectedseats").val();
-    if (tickets != seats) {
-      alert("Ticket quantity (" + tickets + ") does not match number of selected seats (" + seats + ").");
-      return false;
-    }
-    else {
-      return true;
-    }
-  });
 });
