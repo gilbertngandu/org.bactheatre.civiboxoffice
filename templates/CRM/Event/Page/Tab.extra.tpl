@@ -23,7 +23,12 @@
   {literal}
     <script type="text/javascript">
       cj(document).ready(function() {
-        cj('#seat-info').insertAfter('tr.crm-event-eventfees-form-block-line_items');
+        var fee_section = cj('.crm-event-participantview-form-block-fee_amount');
+        if (fee_section.length > 0) {
+          cj('#seat-info').insertAfter(fee_section);
+        } else {
+          cj('#seat-info').insertAfter('tr.crm-event-eventfees-form-block-line_items');
+        }
       });
     </script>
   {/literal}
