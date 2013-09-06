@@ -196,7 +196,9 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Register($f
   $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_id_and_category_type($event_id, 'general_admission');
   $subscription_participant_id = $form->get('subscription_participant_id');
   $form->assign('subscription_email_address', $form->get('subscription_email_address'));
-  civiboxoffice_build_seat_selector($event_id, $form, $place_map_category);
+  if ($place_map_category != NULL) {
+    civiboxoffice_build_seat_selector($event_id, $form, $place_map_category);
+  }
 }
 
 function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($formName, &$form) {
