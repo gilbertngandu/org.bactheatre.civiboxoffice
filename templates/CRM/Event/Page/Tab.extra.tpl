@@ -27,7 +27,12 @@
         if (fee_section.length > 0) {
           cj('#seat-info').insertAfter(fee_section);
         } else {
-          cj('#seat-info').insertAfter('tr.crm-event-eventfees-form-block-line_items');
+	  var fee_section = cj('tr.crm-event-eventfees-form-block-line_items');
+	  if (fee_section.length > 0) {
+            cj('#seat-info').insertAfter('tr.crm-event-eventfees-form-block-line_items');
+	  } else {
+	    cj('#seat-info').insertAfter('tr.crm-participant-form-block-source');
+          }
         }
       });
     </script>
