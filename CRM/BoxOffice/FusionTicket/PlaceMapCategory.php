@@ -89,7 +89,7 @@ EOS;
       <input id="ft_category_event_id" name="ft_category_event_id" value="{$place_map_category->category_event_id}" type="hidden">
       <input id="ft_category_id" name="ft_category_id" value="{$place_map_category->category_id}" type="hidden">
 EOS;
-    return $form_fields . placeMapDraw((array) $place_map_category);
+    return $form_fields . placeMapDraw((array) $place_map_category, false, true, 'www', 16, 1000);
   }
 
   static function find_by_category_and_event($category, $event)
