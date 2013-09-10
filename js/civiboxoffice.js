@@ -136,14 +136,47 @@ function totalTickets() {
 
   SeatMapManager.prototype =
   {
+    discount_button_clicked: function(event)
+    {
+      this.discount_clicked = true;
+    },
+
     initialize: function()
     {
+      this.discount_clicked = false;
       this.notification_handler = new NotificationHandler();
       this.seat_map = $('#seat-map');
       this.seat_map_selector = $('#seat-map-selector');
       if (this.seat_map_selector.length > 0)
       {
         this.seat_map_selector.on('change', $.proxy(this.seat_map_selector_changed, this));
+      }
+      cj('#_qf_Register_reload').click($.proxy(this.discount_button_clicked, this));
+      if (cj('fieldset#priceset').length > 0) {
+        cj('#seat-map-section').insertAfter('fieldset#priceset');
+        cj("form[name=Register]").submit($.proxy(this.on_submit, this));
+      } else {
+        cj('#seat-map-section').insertBefore('#send_confirmation_receipt');
+      }
+    },
+
+    on_submit: function(event)
+    {
+      if (this.discount_clicked)
+      {
+        this.discount_clicked = false;
+        return true;
+      }
+      else
+      {
+        tickets = totalTickets();
+        seats = cj("#selectedseats").val();
+        if (tickets != seats) {
+          alert("Ticket quantity (" + tickets + ") does not match number of selected seats (" + seats + ").");
+          return false;
+        } else {
+          return true;
+        }
       }
     },
 
@@ -520,21 +553,6 @@ cj(document).ready(function() {
     if (subscription_manager != null)
     {
       subscription_manager.seat_map_manager = seat_map_manager;
-    }
-    if (cj('fieldset#priceset').length > 0) {
-      cj('#seat-map-section').insertAfter('fieldset#priceset');
-      cj("form[name=Register]").submit(function() {
-        tickets = totalTickets();
-        seats = cj("#selectedseats").val();
-        if (tickets != seats) {
-          alert("Ticket quantity (" + tickets + ") does not match number of selected seats (" + seats + ").");
-          return false;
-        } else {
-          return true;
-        }
-      });
-    } else {
-      cj('#seat-map-section').insertBefore('#send_confirmation_receipt');
     }
   }
 });
