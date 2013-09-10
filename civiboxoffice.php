@@ -209,15 +209,8 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_Registration_Confirm($fo
 
   $seats = Seat::loadAllSid(substr($form->controller->_key, strlen($form->controller->_key) - 32));
   if ($seats) {
-    $seatarr = Array();
-
-    foreach ($seats as $seatid => $seat) {
-      $seatarr[] = Array('seat_nr' => $seat->seat_nr,
-	'seat_row_nr' => $seat->seat_row_nr,
-	'pmz_name' => $seat->pmz_name);
-    }
     $form->assign('show_seat_information', TRUE);
-    $form->assign('seatInfo', $seatarr);
+    $form->assign('seatInfo', CRM_BoxOffice_FusionTicket_Seat::to_info_array($seats));
   }
   $subscription_participant_id = $form->get('subscription_participant_id');
   if ($subscription_participant_id != NULL) {
@@ -256,17 +249,8 @@ function civiboxoffice_assign_seat_information($formName, &$form)
 
   $seats = Seat::loadAllOrder($partID);
   if ($seats) {
-    $seatarr = Array();
-
-    foreach ($seats as $seatid => $seat) {
-      if ($seat->seat_nr && $seat->seat_row_nr) {
-	$seatarr[] = Array('seat_nr' => $seat->seat_nr,
-	  'seat_row_nr' => $seat->seat_row_nr,
-	  'pmz_name' => $seat->pmz_name);
-      }
-    }
     $form->assign('show_seat_information', TRUE);
-    $form->assign('seatInfo', $seatarr);
+    $form->assign('seatInfo', CRM_BoxOffice_FusionTicket_Seat::to_info_array($seats));
   }
 }
 
@@ -405,6 +389,7 @@ function civiboxoffice_civicrm_validateForm_CRM_Event_Form_Registration_Register
 function civiboxoffice_civicrm_validateForm_CRM_Event_Form_Participant($formName, &$fields, &$files, &$form, &$errors) {
   $submitted_values = $form->getVar('_submitValues');
   if (array_key_exists('place', $submitted_values)) {
+    $participant_id = $form->getVar('_id');
     $submitted_seats = array_values(array_filter($submitted_values['place']));
     $num_seats_selected = count($submitted_seats);
     if ($num_seats_selected > 0) {
@@ -421,6 +406,15 @@ function civiboxoffice_civicrm_validateForm_CRM_Event_Form_Participant($formName
       if ($num_seats_selected != $num_tickets_for_participant) {
         $errors['_qf_default'] = ts("You have chosen {$num_seats_selected} seats, but this registration has {$num_tickets_for_participant} tickets.");
         return;
+      }
+      if (count($submitted_seats) > 0) {
+        CRM_BoxOffice_FusionTicket_Seat::cancel_for_order($participant_id);
+        $result = Seat::reservate($participant_id, $submitted_values['ft_category_event_id'], $submitted_values['ft_category_id'], $submitted_seats, $submitted_values['ft_category_numbering'], false, false);
+        if (!$result) {
+          throw new Exception("There was a problem reserving the seats selected. " . print_r($seats, TRUE));
+        }
+        $seats = Seat::loadAllSid($participant_id);
+        $form->assign('seatInfo', CRM_BoxOffice_FusionTicket_Seat::to_info_array($seats));
       }
     }
   }
@@ -549,11 +543,6 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName,
     $participant_id = $form->getVar('_id');
     $submitted_seats = array_values(array_filter($submitted_values['place']));
     if (count($submitted_seats) > 0) {
-      CRM_BoxOffice_FusionTicket_Seat::cancel_for_order($participant_id);
-      $result = Seat::reservate($participant_id, $submitted_values['ft_category_event_id'], $submitted_values['ft_category_id'], $submitted_seats, $submitted_values['ft_category_numbering'], false, false);
-      if (!$result) {
-        throw new Exception("There was a problem reserving the seats selected. " . print_r($seats, TRUE));
-      }
       $seats = Seat::loadAllSid($participant_id);
       foreach ($seats as $seat) {
         $seat->seat_order_id = $participant_id;

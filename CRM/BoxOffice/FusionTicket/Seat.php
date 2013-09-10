@@ -40,4 +40,20 @@ class CRM_BoxOffice_FusionTicket_Seat
   {
     return substr($qf, strlen($qf) - 32);
   }
+
+  static function to_info_array($seats)
+  {
+    $seat_arrays = Array();
+
+    foreach ($seats as $seatid => $seat) 
+    {
+      $seat_arrays[] = array
+      (
+        'seat_nr' => $seat->seat_nr,
+        'seat_row_nr' => $seat->seat_row_nr,
+        'pmz_name' => $seat->pmz_name,
+      );
+    }
+    return $seat_arrays;
+  }
 }
