@@ -217,7 +217,7 @@ function totalTickets() {
       {
 	this.notifications.add_error(data['error_message']);
       }
-      else 
+      else
       {
 	this.seat_map.html(data['seatmap']);
       }
@@ -247,9 +247,9 @@ function totalTickets() {
       var subscription = this;
       $(this.price_fields).each(function()
       {
-	if ('price_' + this['id'] == id && this['subscription_participant_id'] == subscription.participant_id) 
+	if ('price_' + this['id'] == id && this['subscription_participant_id'] == subscription.participant_id)
 	{
-	  found_price_field_data = this;	  
+	  found_price_field_data = this;
 	}
       });
 
@@ -271,7 +271,7 @@ function totalTickets() {
       var item_strings = [];
       $(this.line_items).each(function()
       {
-	item_strings.push(this.label + ': ' + this.qty); 
+	item_strings.push(this.label + ': ' + this.qty);
       });
       return item_strings.join(', ');
     }
@@ -408,7 +408,7 @@ function totalTickets() {
 	var subscription_info;
 
 	subscription_info = this.event_title + ' (' + this.line_items_string() + ') - Used ' + this.uses + '/' + this.max_uses + ' times.';
-	if (this.uses >= this.max_uses) 
+	if (this.uses >= this.max_uses)
 	{
 	  option_html = '<option disabled="true">' + subscription_info + ' Used up.</option>';
 	}
@@ -522,7 +522,7 @@ function totalTickets() {
       if (this.subscriptions.length == 1)
       {
 	this.current_subscription = this.subscriptions[0];
-	if (this.current_subscription.uses > this.current_subscription.max_uses)
+	if (this.current_subscription.uses >= this.current_subscription.max_uses)
 	{
 	  this.notifications.add_error("You have already used your Flex Pass " + this.current_subscription.uses + " out of " + this.current_subscription.max_uses + " times so you cannot use it any more.");
 	}
