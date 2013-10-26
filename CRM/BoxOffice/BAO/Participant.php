@@ -16,7 +16,7 @@ class CRM_BoxOffice_BAO_Participant
       1 => array(self::counted_particpant_status_ids(), 'String'),
       2 => array($allowed_event_id, 'Integer'),
       3 => array($subscription_email_address, 'String'),
-    );                            
+    );
     $sql = <<<EOS
       SELECT
 	civicrm_participant.*,
@@ -47,15 +47,21 @@ EOS;
     return $participants;
   }
 
-  static function find_all_for_subscription_participant($subscription_participant)
+  static function find_all_not_cancelled_for_subscription_participant($subscription_participant)
   {
     $sql = <<<EOS
       SELECT
-	civicrm_participant.*
+	civicrm_participant.*, civicrm_participant_status_type.name, civicrm_participant_status_type.id
       FROM
 	civicrm_participant
+      LEFT JOIN
+        civicrm_participant_status_type
+      ON
+         civicrm_participant.status_id = civicrm_participant_status_type.id
       WHERE
-	civicrm_participant.subscription_participant_id = %1	
+        lower(civicrm_participant_status_type.name) != 'cancelled'
+      AND
+	civicrm_participant.subscription_participant_id = %1
 EOS;
     $params = array
     (
@@ -75,7 +81,7 @@ EOS;
     $params = array
     (
       1 => array($allowed_participant_id, 'Integer'),
-    );                            
+    );
     $sql = <<<EOS
       SELECT
 	subscription_participants.*

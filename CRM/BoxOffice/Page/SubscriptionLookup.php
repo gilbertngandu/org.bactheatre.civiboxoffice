@@ -10,7 +10,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     {
       $associated_price_objects[] = array($price_set_association, NULL);
     }
-    foreach ($subscription_line_items as $subscription_line_item) 
+    foreach ($subscription_line_items as $subscription_line_item)
     {
       foreach ($associated_price_objects as &$associated_price_pair)
       {
@@ -33,7 +33,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
     {
       throw new Exception("Error finding allowed event $allowed_event_id.");
     }
-    $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($allowed_event, $category_type); 
+    $place_map_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_for_civicrm_event_and_category_type($allowed_event, $category_type);
     $sid = CRM_BoxOffice_FusionTicket_Seat::sid_from_qf($qfkey);
     CRM_BoxOffice_FusionTicket_Seat::cancel_for_sid($sid, $place_map_category);
     return CRM_BoxOffice_FusionTicket_PlaceMapCategory::draw($place_map_category);
@@ -62,7 +62,7 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
 
   static function get_subscription_uses($subscription_participant)
   {
-    $participants = CRM_BoxOffice_BAO_Participant::find_all_for_subscription_participant($subscription_participant);
+    $participants = CRM_BoxOffice_BAO_Participant::find_all_not_cancelled_for_subscription_participant($subscription_participant);
     $subscription_max_uses = CRM_BoxOffice_BAO_Event::get_subscription_max_uses($subscription_participant->event_id);
     $subscription_uses = count($participants);
     return array($subscription_uses, $subscription_max_uses, ($subscription_uses >= $subscription_max_uses));

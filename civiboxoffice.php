@@ -88,7 +88,7 @@ function civiboxoffice_civicrm_navigationMenu(&$params) {
   //  Add fusionticket admin link to civi Events menu
   foreach ($params as $index => $menuvals) {
     if ($menuvals['attributes']['name'] == 'Events') {
-      $maxkey = max(array_keys($params[$index]['child'])); 
+      $maxkey = max(array_keys($params[$index]['child']));
       $params[$index]['child'][$maxkey + 1] =
 	array (
 	  'attributes' => array (
@@ -165,7 +165,7 @@ function civiboxoffice_add_subscription($form) {
   $event_id = $form->getVar('_eventId');
   if ($_POST) {
     if (civiboxoffice_event_allows_subscriptions($event_id) &&
-        civiboxoffice_subscription_covers_all_costs($form)) 
+        civiboxoffice_subscription_covers_all_costs($form))
     {
       civiboxoffice_disable_payment_fields($form);
     }
@@ -340,7 +340,7 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
   if (isset($_POST['subscription_max_uses'])) {
     $form->assign('subscription_max_uses', $_POST['subscription_max_uses']);
   }
-    
+
   if (($snippet == NULL && $form_event_id == NULL) || ($snippet && $component == 'event')) {
     $form->assign('show_civiboxoffice_staging_area', TRUE);
     if ($event_id == NULL)
@@ -370,7 +370,7 @@ function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_EventInfo($f
     {
       $form->assign('subscription_max_uses', CRM_BoxOffice_BAO_Event::get_subscription_max_uses($event_id));
     }
-  } 
+  }
 }
 
 function civiboxoffice_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
@@ -578,7 +578,7 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_EventInfo(
     $event->fusionticket_general_admission_category_id = $event_category->id;
     $save_event = TRUE;
   }
-  
+
   if ($subscription_category_id != NULL && $subscription_category_id != 0)
   {
     $subscription_category = CRM_BoxOffice_FusionTicket_PlaceMapCategory::find_and_include_pm_ort_id($subscription_category_id);
@@ -591,7 +591,7 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_EventInfo(
   {
     CRM_BoxOffice_BAO_Event::save_extended_fields($event);
   }
-} 
+}
 
 function civiboxoffice_civicrm_pre($op, $objectName, $id, &$params) {
   $hook_name = "civiboxoffice_civicrm_pre_{$objectName}_{$op}";
@@ -649,6 +649,27 @@ function civiboxoffice_civicrm_post($op, $objectName, $id, &$params) {
   $hook_name = "civiboxoffice_civicrm_post_{$objectName}_{$op}";
   if (function_exists($hook_name)) {
     $hook_name($op, $objectName, $id, $params);
+  }
+}
+
+function civiboxoffice_civicrm_post_Participant_edit($op, $objectName, $id, &$params) {
+  // Cancel tickets associated with this particiant record if necessary.
+  $query = "SELECT civicrm_participant.*, civicrm_participant_status_type.name
+           FROM
+             civicrm_participant
+           LEFT JOIN
+             civicrm_participant_status_type
+           ON
+             civicrm_participant.status_id = civicrm_participant_status_type.id
+           WHERE
+             lower(civicrm_participant_status_type.name) = 'cancelled'
+           AND
+             civicrm_participant.id = " . $id;
+
+  if ($res=ShopDB::query($query)) {
+    if ($data=shopDB::fetch_assoc($res)) {
+      CRM_BoxOffice_FusionTicket_Seat::cancel_for_order($id);
+    }
   }
 }
 
