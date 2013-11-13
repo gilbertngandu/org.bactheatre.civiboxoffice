@@ -1,6 +1,15 @@
 {if $seatMap}
   <div id="seat-map-staging-area" style="display: none;">
     <div id="seat-map-section">
+      <div id="seat-map-selector-wrapper" style="display: none;">
+        <div class="label" style="float: left; font-size: .95em; padding: 5px; text-align: left; width: 150px;">
+          Event Seating
+        </div>
+        <select id="seat-map-selector">
+          <option value="subscription">Flex Pass</option>
+          <option value="general_admission">General Admission</option>
+        </select>
+      </div>
       <div id="seat-map">
         {$seatMap}
       </div>
