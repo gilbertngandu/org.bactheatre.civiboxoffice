@@ -484,7 +484,7 @@ function totalTickets() {
       $('#email-Primary').val(this.subscription_email_address.val());
       this.subscription_participant_id.val(subscription.participant_id);
       uses_remaining = subscription.max_uses - subscription.uses;
-      this.notifications.add_message("Congratulations! We have found your Flex Pass. Please select your seats belowfrom either Flex Pass or General Admission seating. You have " + uses_remaining + " " + pluralize(uses_remaining, 'show', 'shows') + ' left on your flex pass.');
+      this.notifications.add_message("Congratulations! We have found your Flex Pass. Please select your seats below from either Flex Pass or General Admission seating. You have " + uses_remaining + " " + pluralize(uses_remaining, 'show', 'shows') + ' left on your flex pass.');
     },
 
     subscription_selected: function(event)
