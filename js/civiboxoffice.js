@@ -64,7 +64,7 @@ function totalTickets() {
 	    addticket   = parseFloat( optionPart[1] );
 	    if (isNaN(addticket))
 	    {
-	      addticket = 1;
+	      addticket = 0;
 	    }
 	    var curval  = textval * addticket;
 	    if ( textval >= 0 ) {
@@ -473,7 +473,7 @@ function totalTickets() {
 	  eval( 'var option = ' + price_field.attr('price') );
 	  element_index = option[0];
 	  price[element_index] = 0;
-	  price_field.attr('price', '[' + element_index + ',"0||"]');
+	  price_field.attr('price', '[' + element_index + ',"0|1|"]');
 	}
       });
       totalfee = 0;
