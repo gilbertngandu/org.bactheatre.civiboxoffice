@@ -565,6 +565,7 @@ class PlaceMapPart Extends Model {
 
           if ($seat_c[PM_ZONE] > 0 and $seat_c[PM_CATEGORY]) {
             if ($seat_db = $seats_db[$seat_c[PM_ID]]) {
+              $this->data[$j][$k][PM_CATEGORY] = $seat_db['category_ident'];
               if ($seat_db['seat_ts']) {
                   $expires = min($seat_db['seat_ts'], $expires);
               }

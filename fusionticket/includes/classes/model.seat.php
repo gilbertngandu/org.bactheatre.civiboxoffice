@@ -142,8 +142,13 @@ class Seat  Extends Model {
   function load_pmp_all ($pmp_id){
     global $_SHOP;
 
-    $query="select seat_id, seat_status, seat_ts
+    $query="select Seat.seat_id as seat_id, 
+                   Seat.seat_status as seat_status, 
+                   Seat.seat_ts as seat_ts,
+                   Category.category_ident as category_ident
             from Seat
+            LEFT OUTER JOIN Category
+            ON Seat.seat_category_id = Category.category_id
             where seat_pmp_id="._esc($pmp_id);
     if($res=ShopDB::query($query)){
       while($seat=shopDB::fetch_assoc($res)){
