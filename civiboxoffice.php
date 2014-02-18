@@ -113,9 +113,6 @@ function civiboxoffice_civicrm_buildForm($formName, &$form) {
   if (function_exists($hook_name)) {
     $hook_name($formName, $form);
   }
-  if (preg_match('/CRM_Event_Form_ManageEvent.*/', $formName)) {
-    CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/manage_event.js');
-  }
 }
 
 function civiboxoffice_build_seat_selector($event_id, $form, $place_map_category) {

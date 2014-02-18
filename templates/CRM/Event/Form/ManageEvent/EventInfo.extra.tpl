@@ -72,6 +72,8 @@
     </tbody>
   </table>
   <script>
-    cj(document).trigger('form-loaded');
+    $('#civiboxoffice-staging-area tbody').children().insertBefore('.crm-event-manage-eventinfo-form-block-max_participants');
+    $('#allowed-subscription-area').show();
+    $('#civiboxoffice-staging-area').remove();
   </script>
 {/if}
