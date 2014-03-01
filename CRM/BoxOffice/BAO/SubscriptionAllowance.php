@@ -2,6 +2,48 @@
 
 class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_SubscriptionAllowance
 {
+  public static function find_allowed_subscription_pricefields_for_event_id($event_id) {
+
+    $allowed_subscriptions = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event_id);
+    $subscription_ids = array();
+    foreach ($allowed_subscriptions as $subscription) {
+      $subscription_ids [] = $subscription->subscription_event_id;
+    }
+
+    $price_fields = array();
+    foreach ($subscription_ids as $subscription_id) {
+      $params = array( 1 => array($subscription_id, 'Integer') );
+      $sql = <<<EOF
+        SELECT
+          civicrm_event.id as event_id,
+          civicrm_event.title as subscription_title,
+          civicrm_price_field.label,
+          civicrm_price_field.id as price_field_id
+        FROM civicrm_price_set_entity
+        JOIN
+          civicrm_price_field
+        ON
+         civicrm_price_field.price_set_id = civicrm_price_set_entity.price_set_id
+        JOIN
+          civicrm_event
+        ON
+          civicrm_event.id = civicrm_price_set_entity.entity_id
+        WHERE
+          entity_table = "civicrm_event" and entity_id = %1
+EOF;
+
+      $result = CRM_Core_DAO::executeQuery($sql, $params);
+
+      while ($result->fetch()) {
+        //     CRM_Core_Error::debug($result);
+        // $price_fields[$subscription_id] []= clone($result);
+        $price_fields []= clone($result);
+      }
+    }
+    return $price_fields;
+
+  }
+
   public static function find_all_by_allowed_event_id($allowed_event_id)
   {
     $subscription_allowance = new CRM_BoxOffice_BAO_SubscriptionAllowance();
@@ -23,13 +65,13 @@ class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_Subscrip
     $line_item->entity_id = $subscription_id;
     $line_item->find(FALSE);
     while ($line_item->fetch())
-    {
+      {
       $subscription_line_items[] = clone($line_item);
     }
     return $subscription_line_items;
   }
 
-  public static function find_participant_by_participant_id_and_allowed_event_id($participant_id, $allowed_event_id) 
+  public static function find_participant_by_participant_id_and_allowed_event_id($participant_id, $allowed_event_id)
   {
     $params = array
     (
