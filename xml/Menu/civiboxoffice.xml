@@ -16,4 +16,9 @@
     <title>Seat Assignments</title>
     <page_callback>CRM_BoxOffice_Page_SeatAssignments::report</page_callback>
   </item>
+  <item>
+    <path>civicrm/civiboxoffice/price_fields</path>
+    <title>Price Fields</title>
+    <page_callback>CRM_BoxOffice_Page_PriceFields::price_fields</page_callback>
+  </item>
 </menu>

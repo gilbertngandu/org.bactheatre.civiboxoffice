@@ -2,47 +2,10 @@
 
 class CRM_BoxOffice_BAO_SubscriptionAllowance extends CRM_BoxOffice_DAO_SubscriptionAllowance
 {
-  public static function find_allowed_subscription_pricefields_for_event_id($event_id) {
-
-    $allowed_subscriptions = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event_id);
-    $subscription_ids = array();
-    foreach ($allowed_subscriptions as $subscription) {
-      $subscription_ids [] = $subscription->subscription_event_id;
-    }
-
-    $price_fields = array();
-    foreach ($subscription_ids as $subscription_id) {
-      $params = array( 1 => array($subscription_id, 'Integer') );
-      $sql = <<<EOF
-        SELECT
-          civicrm_event.id as event_id,
-          civicrm_event.title as subscription_title,
-          civicrm_price_field.label,
-          civicrm_price_field.id as price_field_id
-        FROM civicrm_price_set_entity
-        JOIN
-          civicrm_price_field
-        ON
-         civicrm_price_field.price_set_id = civicrm_price_set_entity.price_set_id
-        JOIN
-          civicrm_event
-        ON
-          civicrm_event.id = civicrm_price_set_entity.entity_id
-        WHERE
-          entity_table = "civicrm_event" and entity_id = %1
-EOF;
-
-      $result = CRM_Core_DAO::executeQuery($sql, $params);
-
-      while ($result->fetch()) {
-        //     CRM_Core_Error::debug($result);
-        // $price_fields[$subscription_id] []= clone($result);
-        $price_fields []= clone($result);
-      }
-    }
-    return $price_fields;
-
-  }
+  public $allowed_price_fields = NULL;
+  public $price_set_associations = NULL;
+  public $subscription_event = NULL;
+  public $subscription_price_fields = NULL;
 
   public static function find_all_by_allowed_event_id($allowed_event_id)
   {
@@ -100,6 +63,44 @@ EOS;
       return $participant;
     }
     return NULL;
+  }
+
+  function load_allowed_price_fields()
+  {
+    $this->allowed_price_fields = CRM_BoxOffice_BAO_PriceField::find_by_event_id($this->allowed_event_id);
+  }
+
+  function load_price_set_associations($submitted_values = array())
+  {
+    $this->load_subscription_price_fields();
+    $existing_price_set_associations = CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id($this->allowed_event_id);
+    foreach ($this->subscription_price_fields as $price_field) {
+      $price_set_association = CRM_BoxOffice_BAO_PriceSetAssociation::select_by_subscription_price_field_id($existing_price_set_associations, $price_field->id);
+      if ($price_set_association == NULL) {
+        $price_set_association = new CRM_BoxOffice_BAO_PriceSetAssociation();
+        $price_set_association->event_id = $this->allowed_event_id;
+        $price_set_association->subscription_price_field_id = $price_field->id;
+      }
+      $price_set_association->subscription_price_field = $price_field;
+      if (!empty($submitted_values)) {
+        $price_set_association->update_from_submitted_list($submitted_values[$this->id]);
+      }
+      $this->price_set_associations[] = $price_set_association;
+    }
+  }
+
+  function load_subscription_event()
+  {
+    $this->subscription_event = new CRM_Event_BAO_Event();
+    $this->subscription_event->id = $this->subscription_event_id;
+    if (!$this->subscription_event->find(TRUE)) {
+      throw new Exception("Unable to find event {$this->subscription_event->id} for subscription allowance {$this->id}.");
+    }
+  }
+
+  function load_subscription_price_fields()
+  {
+    $this->subscription_price_fields = CRM_BoxOffice_BAO_PriceField::find_by_event_id($this->subscription_event_id);
   }
 
   public static function subscription_allowances_exist_for_allowed_event_id($allowed_event_id)

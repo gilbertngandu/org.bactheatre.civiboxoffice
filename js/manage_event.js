@@ -12,6 +12,6 @@
     $('#allowed-subscription-area').show();
     $('#civiboxoffice-staging-area').remove();
   }
-  $(document).on('form-loaded', setup);
+  setup();
 }
 ).call(this);

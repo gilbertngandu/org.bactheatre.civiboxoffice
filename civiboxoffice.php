@@ -109,7 +109,6 @@ function civiboxoffice_civicrm_navigationMenu(&$params) {
 }
 
 function civiboxoffice_civicrm_buildForm($formName, &$form) {
-  CRM_Core_Error::debug('form name: ' . $formName);
   $hook_name = "civiboxoffice_civicrm_buildForm_$formName";
   if (function_exists($hook_name)) {
     $hook_name($formName, $form);
@@ -552,42 +551,34 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_Participant($formName,
   }
 }
 
-function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_Fee($formName, $form) {  // jliu
-  CRM_Core_Error::debug('civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_Fee');
-
-  dpm(CRM_BoxOffice_BAO_PriceSetAssociation::find_all_for_event_id(528), "find all for event id");
-
-  CRM_Core_Resources::singleton()->addScriptFile(CBO_EXTENSION_NAME, 'js/manage_event.js');
-
+function civiboxoffice_civicrm_buildForm_CRM_Event_Form_ManageEvent_Fee($formName, $form) {
   $event = new CRM_Event_BAO_Event();
   $event->id = $form->get('id');
   if (!$event->find(TRUE))
   {
     throw new Exception("Couldn't find event $id when trying to update fusion ticket fields.");
   }
+  if (array_key_exists('price_set_association', $form->_submitValues)) {
+    $form->set('price_set_association', $form->_submitValues['price_set_association']);
+  }
+  $form->assign('manage_event_fees_js_url', CRM_Core_Resources::singleton()->getUrl(CBO_EXTENSION_NAME, 'js/manage_event_fees.js'));
 
-  $subscription_price_fields = CRM_BoxOffice_BAO_SubscriptionAllowance::find_allowed_subscription_pricefields_for_event_id($event->id);
-
-  $form->assign('subscription_price_fields', $subscription_price_fields);
-
-  // Get price fields for the price set for this performance
-  // Get the price set for this performance
-  $default_values = $form->getVar('_defaultValues');
-  $price_set_id = $default_values['price_set_id'];
+  $allowed_subscriptions = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event->id);
+  foreach ($allowed_subscriptions as $allowed_subscription) {
+    $allowed_subscription->load_subscription_event();
+    $allowed_subscription->load_price_set_associations($form->get('price_set_association'));
+  }
+  $form->assign('allowed_subscriptions', $allowed_subscriptions);
+  $price_set_id_element = $form->getElement('price_set_id');
+  $price_set_id = $price_set_id_element->getValue();
+  $price_set_id = $price_set_id[0];
   if ($price_set_id) {
     $allowed_event_price_fields = CRM_BoxOffice_BAO_PriceSetAssociation::get_all_price_fields_for_price_set_id($price_set_id);
-    dpm($allowed_event_price_fields, "allowed event price fields");
     $form->assign('allowed_event_price_fields', $allowed_event_price_fields);
-
-    // TODO check for default values for price field associations
-
-
   }
 }
 
-function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_Fee($formName, &$form) { // jliu
-  CRM_Core_Error::debug('civicrm_postProcess_CRM_Event_Form_ManageEvent_Fee');
-
+function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_Fee($formName, &$form) {
   $submitted_values = $form->getVar('_submitValues');
   // Look for price field assocations
   $event = new CRM_Event_BAO_Event();
@@ -596,32 +587,13 @@ function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_Fee($formN
   {
     throw new Exception("Couldn't find event $id when trying to update fusion ticket fields.");
   }
-  $subscription_price_fields = CRM_BoxOffice_BAO_SubscriptionAllowance::find_allowed_subscription_pricefields_for_event_id($event->id);
-  foreach($subscription_price_fields as $subscription_price_field) {
-    $subscription_price_field_id = $subscription_price_field->price_field_id;
-    if ($subscription_price_field_id &&
-        array_key_exists('price_set_assoc_for_subscription_price_field_id_' . $subscription_price_field_id, $submitted_values)) {
-      $allowed_event_price_field_id = $submitted_values['price_set_assoc_for_subscription_price_field_id_' . $subscription_price_field_id];
-
-      if (is_string($allowed_event_price_field_id) &&
-          (strlen(trim($allowed_event_price_field_id)) > 0)) {
-        $allowed_event_price_field_id = intval($allowed_event_price_field_id);
-
-        // Write/update row in civiboxoffice_price_set_associations
-        dpm($event->id, "event id");
-        dpm($subscription_price_field_id, "subscription price field id");
-        dpm($allowed_event_price_field_id, "allowed event price field id");
-
-        CRM_BoxOffice_BAO_PriceSetAssociation::update_civiboxoffice_price_set_associations_table($event->id,
-                                                                                                 $subscription_price_field_id,
-                                                                                                 $allowed_event_price_field_id);
-
-      }
-    }
+  $allowed_subscriptions = CRM_BoxOffice_BAO_SubscriptionAllowance::find_all_by_allowed_event_id($event->id);
+  foreach ($allowed_subscriptions as $allowed_subscription) {
+    $allowed_subscription->load_price_set_associations($form->get('price_set_association'));
   }
 }
 
-function civicrm_postProcess_CRM_Event_Form_ManageEvent_EventInfo($formName, &$form) {
+function civiboxoffice_civicrm_postProcess_CRM_Event_Form_ManageEvent_EventInfo($formName, &$form) {
   ft_security();
   $event = new CRM_Event_BAO_Event();
   $event->id = $form->get('id');
