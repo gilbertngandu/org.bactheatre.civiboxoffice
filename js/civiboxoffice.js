@@ -555,14 +555,20 @@ function totalTickets() {
       $('#middle_name').val(contact.middle_name);
       $('#last_name').val(contact.last_name);
       primary_address = this.find_primary_address();
-      $('#street_address-Primary').val(primary_address.street_address);
-      $('#city-Primary').val(primary_address.city);
-      $('#state_province-Primary').val(primary_address.state_province_id);
-      $('#postal_code-Primary').val(primary_address.postal_code);
+      if (primary_address != null) {
+          $('#street_address-Primary').val(primary_address.street_address);
+          $('#city-Primary').val(primary_address.city);
+          $('#state_province-Primary').val(primary_address.state_province_id);
+          $('#postal_code-Primary').val(primary_address.postal_code);
+      }
       home_phone = this.find_phone_by_type('Phone');
-      $('#phone-Primary-1').val(home_phone.phone);
+      if (home_phone != null) {
+          $('#phone-Primary-1').val(home_phone.phone);
+      }
       mobile_phone = this.find_phone_by_type('Mobile');
-      $('#phone-Primary-2').val(mobile_phone.phone);
+      if (mobile_phone != null) {
+          $('#phone-Primary-2').val(mobile_phone.phone);
+      }
     },
 
     update_subscriptions_data: function(data)
