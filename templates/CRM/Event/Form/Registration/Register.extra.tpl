@@ -10,6 +10,9 @@
           <option value="general_admission">General Admission</option>
         </select>
       </div>
+      <div style="float: clear;">
+        &nbsp;
+      </div>
       <div id="seat-map">
         {$seatMap}
       </div>

@@ -247,7 +247,7 @@ function totalTickets() {
       var subscription = this;
       $(this.price_fields).each(function()
       {
-	if ('price_' + this['id'] == id && this['subscription_participant_id'] == subscription.participant_id)
+	if ('price_' + this['id'] == id && this['subscription_participant_id'] == subscription.participant.id)
 	{
 	  found_price_field_data = this;
 	}
@@ -260,7 +260,7 @@ function totalTickets() {
     {
       this.event_title = data['event_title'];
       this.max_uses = data['max_uses'];
-      this.participant_id = data['participant_id'];
+      this.participant = data['participant'];
       this.price_fields = data['price_fields'];
       this.line_items = data['line_items'];
       this.uses = data['uses'];
@@ -335,6 +335,36 @@ function totalTickets() {
       this.subscription_participant_id = $('#subscription_participant_id');
       this.seat_map_manager = null;
       this.notifications = new NotificationHandler();
+    },
+
+    find_phone_by_type: function(type_name)
+    {
+      var found_phone = null;
+      phones = this.current_subscription.participant.contact.phones;
+      phones_at_location = $(phones).filter(function(i, phone)
+      {
+        if (phone.phone_type == type_name) {
+          return 1;
+        }
+      });
+      return phones_at_location[0];
+    },
+
+    find_primary_address: function()
+    {
+      var found_address = null;
+      addresses = this.current_subscription.participant.contact.addresses;
+      primary_addresses = $(addresses).filter(function(i, address)
+      {
+        if (address.is_primary == '1') {
+          return 1;
+        }
+      });
+      if (primary_addresses.length > 0) {
+        return primary_addresses[0];
+      } else {
+        return addresses[0];
+      }
     },
 
     lookup_error: function(jq_xhr, error_type, exception)
@@ -478,11 +508,12 @@ function totalTickets() {
       });
       totalfee = 0;
       display(totalfee);
+      this.update_contact_fields();
       $('#payment_information').hide();
       $('#seat-map-selector-wrapper').show();
       $('.email-Primary-section').parent().hide();
       $('#email-Primary').val(this.subscription_email_address.val());
-      this.subscription_participant_id.val(subscription.participant_id);
+      this.subscription_participant_id.val(subscription.participant.id);
       uses_remaining = subscription.max_uses - subscription.uses;
       this.notifications.add_message("Congratulations! We have found your Flex Pass. Please select your seats below from either Flex Pass or General Admission seating. You have " + uses_remaining + " " + pluralize(uses_remaining, 'show', 'shows') + ' left on your flex pass.');
     },
@@ -511,6 +542,27 @@ function totalTickets() {
 	this.current_subscription = this.subscriptions[index];
 	this.set_fields();
       }
+    },
+
+    update_contact_fields: function()
+    {
+      if (this.current_subscription == null)
+      {
+        return;
+      }
+      contact = this.current_subscription.participant.contact;
+      $('#first_name').val(contact.first_name);
+      $('#middle_name').val(contact.middle_name);
+      $('#last_name').val(contact.last_name);
+      primary_address = this.find_primary_address();
+      $('#street_address-Primary').val(primary_address.street_address);
+      $('#city-Primary').val(primary_address.city);
+      $('#state_province-Primary').val(primary_address.state_province_id);
+      $('#postal_code-Primary').val(primary_address.postal_code);
+      home_phone = this.find_phone_by_type('Phone');
+      $('#phone-Primary-1').val(home_phone.phone);
+      mobile_phone = this.find_phone_by_type('Mobile');
+      $('#phone-Primary-2').val(mobile_phone.phone);
     },
 
     update_subscriptions_data: function(data)

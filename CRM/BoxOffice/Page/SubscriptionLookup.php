@@ -1,6 +1,35 @@
 <?php
 
 class CRM_BoxOffice_Page_SubscriptionLookup {
+  static function contact_details($contact_id)
+  {
+    $contact = new CRM_Contact_BAO_Contact();
+    $contact->id = $contact_id;
+    if (!$contact->find(TRUE)) {
+      throw new Exception("Couldn't find a contact with id $contact_id.");
+    }
+    $contact_array = array();
+    CRM_Core_DAO::storeValues($contact, $contact_array);
+    $addresses = CRM_BoxOffice_BAO_Contact::addresses($contact_id);
+    $contact_array['addresses'] = array();
+    $location_types = CRM_Core_PseudoConstant::locationType();
+    foreach ($addresses as $address) {
+      $address_array = array();
+      CRM_Core_DAO::storeValues($address, $address_array);
+      $address_array['location_type'] = $location_types[$address->location_type_id];
+      $contact_array['addresses'][] = $address_array;
+    }
+    $phones = CRM_BoxOffice_BAO_Contact::phones($contact_id);
+    $phone_types = CRM_Core_PseudoConstant::phoneType();
+    foreach ($phones as $phone) {
+      $phone_array = array();
+      CRM_Core_DAO::storeValues($phone, $phone_array);
+      $phone_array['phone_type'] = $phone_types[$phone->phone_type_id];
+      $contact_array['phones'][] = $phone_array;
+    }
+    return $contact_array;
+  }
+
   static function generate_associated_price_objects($price_set_associations, $subscription_line_items)
   {
     $error_messages = array();
@@ -96,7 +125,8 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
 	list($subscription_uses, $subscription_max_uses, $exceeded_max) = static::get_subscription_uses($subscription_participant);
 	list($associated_price_objects, $error_messages) = static::generate_associated_price_objects($price_set_associations, $subscription_line_items);
 	if (empty($error_messages))
-	{
+        {
+          $contact = static::contact_details($subscription_participant->contact_id);
 	  $subscription_price_fields = static::generate_subscription_price_fields($associated_price_objects);
 	  $pared_down_line_items = static::pare_down_subscription_line_items($subscription_line_items);
 	  $subscription = array
@@ -104,7 +134,11 @@ class CRM_BoxOffice_Page_SubscriptionLookup {
 	    'event_title' => $subscription_participant->event_title,
 	    'line_items' => $pared_down_line_items,
 	    'max_uses' => $subscription_max_uses,
-	    'participant_id' => $subscription_participant->id,
+            'participant' => array
+            (
+              'contact' => $contact,
+              'id' => $subscription_participant->id,
+            ),
 	    'price_fields' => $subscription_price_fields,
 	    'uses' => $subscription_uses,
 	  );
