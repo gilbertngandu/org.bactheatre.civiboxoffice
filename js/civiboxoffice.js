@@ -289,7 +289,10 @@ function totalTickets() {
     clear: function()
     {
       this.clear_messages();
-      this.seat_map_manager.show_loading();
+      if (this.seat_map_manager != null)
+      {
+        this.seat_map_manager.show_loading();
+      }
       $('#subscription-choice-area').html('');
       $('#subscription_participant_id').val('');
       $('#payment_information').show();
