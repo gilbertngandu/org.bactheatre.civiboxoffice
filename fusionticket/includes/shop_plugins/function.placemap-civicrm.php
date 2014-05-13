@@ -44,8 +44,10 @@ function placeMapDraw($category, $restrict = false, $print_zone = true, $area = 
     global $_SHOP;
     $imgpath = CRM_Core_Resources::singleton()->getUrl('org.bactheatre.civiboxoffice', 'fusionticket/images/');
 
-    $l_row = ' '.con('place_row').' ';
-    $l_seat = ' '.con('place_seat').' ';
+    // $l_row = ' '.con('place_row').' ';
+    // $l_seat = ' '.con('place_seat').' ';
+    $l_row = ' : ';
+    $l_seat = ' : ';
 
     $cat_ident = $category['category_ident'];
     $cat_num = 0;
